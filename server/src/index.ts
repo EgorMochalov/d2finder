@@ -20,7 +20,22 @@ import { errorHandler } from "./middleware/errorHandler";
 const app = express();
 const httpServer = createServer(app);
 
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
+app.use(cors({
+  origin: (origin, cb) => {
+    const allowed = [
+      process.env.CLIENT_URL,
+      ...(process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(',') : []),
+      'http://localhost:5173',
+      'http://localhost:3001',
+    ].filter(Boolean);
+    if (!origin || allowed.some((a) => origin.startsWith(a!) || origin.endsWith('.vercel.app'))) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Serve uploaded files
