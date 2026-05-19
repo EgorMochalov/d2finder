@@ -1,4 +1,4 @@
-const API_URL = '/api';
+const API_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? `https://${window.location.hostname}/api` : '/api');
 
 interface RequestOptions {
   method?: string;
