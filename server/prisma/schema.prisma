@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum TeamRole {
+  CAPTAIN
+  VICE_CAPTAIN
+  MEMBER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+enum ChatType {
+  PRIVATE
+  TEAM
+}
+
+model User {
+  id            String     @id @default(cuid())
+  username      String     @unique
+  email         String     @unique
+  passwordHash  String
+  steamId       String?    @unique
+  avatarUrl     String?
+  rank          Int?       @default(0)
+  rolePrefs     String?    @default("[]")
+  region        String?
+  languages     String?    @default("[]")
+  bio           String?
+  isLooking     Boolean    @default(false)
+  lookingExpiry DateTime?
+  role          UserRole   @default(USER)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  sentFriendRequests    FriendRequest[]  @relation("SentRequests")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedRequests")
+  friendships           Friendship[]     @relation("UserFriendships")
+  friendshipsOf         Friendship[]     @relation("UserFriendOf")
+  teamMembers           TeamMember[]
+  teamInvitations       TeamInvitation[]
+  teamJoinRequests      TeamJoinRequest[]
+  sentMessages          Message[]
+  notifications         Notification[]
+  captainTeams          Team[]            @relation("CaptainTeams")
+  blockedUsers           BlockedUser[]     @relation("BlockedBy")
+  blockedBy              BlockedUser[]     @relation("BlockedTarget")
+  clanWarLookings       ClanWarLooking[]  @relation("UserClanWarLooking")
+
+  @@map("users")
+}
+
+model FriendRequest {
+  id        String   @id @default(cuid())
+  senderId  String
+  receiverId String
+  status    InviteStatus @default(PENDING)
+  createdAt DateTime @default(now())
+
+  sender   User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@map("friend_requests")
+}
+
+model Friendship {
+  id       String @id @default(cuid())
+  userId   String
+  friendId String
+
+  user   User @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("UserFriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@map("friendships")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  tag         String   @unique
+  description String?
+  logoUrl     String?
+  captainId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  captain         User              @relation("CaptainTeams", fields: [captainId], references: [id])
+  members         TeamMember[]
+  invitations     TeamInvitation[]
+  joinRequests    TeamJoinRequest[]
+  clanWars1       ClanWar[]         @relation("ClanWarTeam1")
+  clanWars2       ClanWar[]         @relation("ClanWarTeam2")
+  clanWarLookings ClanWarLooking[]  @relation("TeamClanWarLooking")
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id      String   @id @default(cuid())
+  teamId  String
+  userId  String
+  role    TeamRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model TeamInvitation {
+  id        String       @id @default(cuid())
+  teamId    String
+  userId    String
+  message   String?
+  status    InviteStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_invitations")
+}
+
+model TeamJoinRequest {
+  id        String       @id @default(cuid())
+  teamId    String
+  userId    String
+  message   String?
+  status    InviteStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_join_requests")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  chatType  ChatType
+  chatId    String
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  content   String?
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model ClanWar {
+  id          String       @id @default(cuid())
+  team1Id     String
+  team2Id     String
+  status      InviteStatus @default(PENDING)
+  scheduledAt DateTime?
+  message     String?
+  createdAt   DateTime     @default(now())
+
+  team1 Team @relation("ClanWarTeam1", fields: [team1Id], references: [id], onDelete: Cascade)
+  team2 Team @relation("ClanWarTeam2", fields: [team2Id], references: [id], onDelete: Cascade)
+
+  @@map("clan_wars")
+}
+
+model ClanWarLooking {
+  id          String   @id @default(cuid())
+  teamId      String
+  authorId    String
+  description String
+  timeText    String?
+  dateText    String?
+  rankReq     String?
+  mmrReq      Int?
+  createdAt   DateTime @default(now())
+
+  team   Team @relation("TeamClanWarLooking", fields: [teamId], references: [id], onDelete: Cascade)
+  author User @relation("UserClanWarLooking", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("clan_war_looking")
+}
+
+model BlockedUser {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker User @relation("BlockedBy", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("BlockedTarget", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@map("blocked_users")
+}
