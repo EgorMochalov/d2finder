@@ -7,10 +7,18 @@ import { useToast } from '../components/Toast';
 import AvatarImg from '../components/AvatarImg';
 import RankPicker from '../components/RankPicker';
 import Modal from '../components/Modal';
-import { UserPlus, MessageCircle, Shield, Camera, Save, Star, MapPin, Globe, Square, Play, AlertCircle } from 'lucide-react';
+import { UserPlus, MessageCircle, Shield, Camera, Save, Star, MapPin, Globe, Square, Play, AlertCircle, Sparkles } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { ROLE_PREFS, roleLabelKey } from '../lib/positions';
 import { filterManageableTeams } from '../lib/teamUtils';
+import {
+  PLAYSTYLE_TAG_IDS,
+  MAX_PLAYSTYLE_TAGS,
+  playstyleTagKey,
+  parsePlaystyleTags,
+  togglePlaystyleTag,
+  type PlaystyleTagId,
+} from '../lib/playstyleTags';
 
 const REGIONS = ['Europe West', 'Europe East', 'Russia', 'US East', 'US West', 'SE Asia', 'China', 'South America', 'Australia', 'Japan'];
 const LANGUAGES = ['English', 'Russian', 'Chinese', 'Spanish', 'Portuguese', 'German', 'French', 'Ukrainian', 'Polish', 'Turkish'];
@@ -32,6 +40,7 @@ export default function ProfilePage() {
   const [region, setRegion] = useState('');
   const [languages, setLanguages] = useState<string[]>([]);
   const [bio, setBio] = useState('');
+  const [playstyleTags, setPlaystyleTags] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [myTeams, setMyTeams] = useState<any[]>([]);
@@ -61,6 +70,7 @@ export default function ProfilePage() {
       setRegion(d.region || '');
       try { setLanguages(JSON.parse(d.languages || '[]')); } catch { setLanguages([]); }
       setBio(d.bio || '');
+      setPlaystyleTags(parsePlaystyleTags(d.playstyleTags));
     } catch (err: any) { toast('error', err.message || 'Error'); } finally { setLoading(false); }
   }
 
@@ -76,7 +86,7 @@ export default function ProfilePage() {
   async function handleSave() {
     setSaving(true);
     try {
-      await api.users.update({ rank, rolePrefs, region, languages, bio });
+      await api.users.update({ rank, rolePrefs, region, languages, bio, playstyleTags });
       setEditing(false); await refreshUser(); await loadProfile();
     } catch (err: any) { toast('error', err.message); } finally { setSaving(false); }
   }
@@ -156,6 +166,30 @@ export default function ProfilePage() {
               <div className="flex flex-wrap gap-1.5">{LANGUAGES.map((l) => <button key={l} type="button" onClick={() => setLanguages(toggleChip(languages, l))} className={`px-3 py-1.5 rounded-lg text-xs border transition ${languages.includes(l) ? 'bg-blue-dim border-blue/30 text-blue' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{l}</button>)}</div>
             </div>
 
+            <div>
+              <label className="field-label flex items-center gap-1.5"><Sparkles size={14} className="text-accent" /> {t('profile.playstyle')}</label>
+              <p className="text-muted text-xs mb-2">{t('profile.playstyle_desc')}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {PLAYSTYLE_TAG_IDS.map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setPlaystyleTags((prev) => togglePlaystyleTag(prev, id))}
+                    className={`px-3 py-1.5 rounded-lg text-xs border transition text-left ${
+                      playstyleTags.includes(id)
+                        ? 'chip-playstyle border-violet-400/40'
+                        : 'glass-input border-white/5 text-muted hover:text-text'
+                    }`}
+                  >
+                    {t(playstyleTagKey(id))}
+                  </button>
+                ))}
+              </div>
+              {playstyleTags.length >= MAX_PLAYSTYLE_TAGS && (
+                <p className="text-muted text-[10px] mt-1.5">{t('profile.playstyle_max')}</p>
+              )}
+            </div>
+
             <div><label className="field-label">{t('profile.bio')}</label><textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder={t('placeholders.bio')} className="glass-textarea w-full rounded-xl px-4 py-2.5 text-sm" /></div>
             <div className="flex gap-3 pt-2"><button onClick={handleSave} disabled={saving} className="btn-primary px-6 py-2.5 rounded-xl text-sm flex items-center gap-2"><Save size={15} /> {saving ? t('common.loading') : t('profile.save')}</button><button onClick={() => { setEditing(false); loadProfile(); }} className="btn-ghost px-6 py-2.5 rounded-xl text-sm">{t('profile.cancel')}</button></div>
           </div>
@@ -181,6 +215,17 @@ export default function ProfilePage() {
               {languages.length > 0 ? <div className="flex flex-wrap gap-1">{languages.map((l: string) => <span key={l} className="chip">{l}</span>)}</div> : <p className="text-text text-sm">—</p>}
             </div>
           </div>
+
+          {playstyleTags.length > 0 && (
+            <div className="glass rounded-xl p-4 mb-6">
+              <p className="text-muted text-[10px] uppercase tracking-wider font-semibold mb-3 flex items-center gap-1.5"><Sparkles size={12} /> {t('profile.playstyle')}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {playstyleTags.map((id) => (
+                  <span key={id} className="chip-playstyle">{t(playstyleTagKey(id as PlaystyleTagId))}</span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {bio && <div className="glass rounded-xl p-4 mb-6"><p className="text-muted text-[10px] uppercase tracking-wider font-semibold mb-2">{t('profile.bio')}</p><p className="text-text text-sm leading-relaxed">{bio}</p></div>}
 

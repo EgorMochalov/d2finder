@@ -4,10 +4,19 @@ import prisma from "../lib/prisma";
 const router = Router();
 
 router.get("/teammates", async (req: Request, res: Response) => {
-  const { rankMin, rankMax, region, position, language, query } = req.query;
+  const { rankMin, rankMax, region, position, language, query, playstyle } = req.query;
+
+  const tagFilters: Record<string, unknown>[] = [];
+  if (playstyle) {
+    const tags = String(playstyle).split(",").map((t) => t.trim()).filter(Boolean);
+    for (const tag of tags) {
+      tagFilters.push({ playstyleTags: { contains: `"${tag}"` } });
+    }
+  }
 
   const where: Record<string, unknown> = {
     isLooking: true,
+    ...(tagFilters.length > 0 ? { AND: tagFilters } : {}),
   };
 
   if (rankMin || rankMax) {
@@ -43,6 +52,7 @@ router.get("/teammates", async (req: Request, res: Response) => {
       region: true,
       languages: true,
       bio: true,
+      playstyleTags: true,
       isLooking: true,
       lookingExpiry: true,
     },
@@ -54,6 +64,7 @@ router.get("/teammates", async (req: Request, res: Response) => {
     ...u,
     rolePrefs: JSON.parse(u.rolePrefs || "[]"),
     languages: JSON.parse(u.languages || "[]"),
+    playstyleTags: JSON.parse(u.playstyleTags || "[]"),
   }));
 
   res.json(parsed);

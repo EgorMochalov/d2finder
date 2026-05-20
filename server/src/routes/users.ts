@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { z } from "zod";
 import prisma from "../lib/prisma";
 import { authenticate } from "../middleware/auth";
+import { sanitizePlaystyleTags } from "../lib/playstyleTags";
 
 const router = Router();
 
@@ -17,7 +18,10 @@ router.get("/me", authenticate, async (req: Request, res: Response) => {
     return;
   }
   const { passwordHash, steamId, ...safe } = user;
-  res.json(safe);
+  res.json({
+    ...safe,
+    playstyleTags: JSON.parse(safe.playstyleTags || "[]"),
+  });
 });
 
 router.get("/:id", async (req: Request, res: Response) => {
@@ -32,6 +36,7 @@ router.get("/:id", async (req: Request, res: Response) => {
       region: true,
       languages: true,
       bio: true,
+      playstyleTags: true,
       isLooking: true,
       lookingExpiry: true,
     },
@@ -40,7 +45,10 @@ router.get("/:id", async (req: Request, res: Response) => {
     res.status(404).json({ error: "User not found" });
     return;
   }
-  res.json(user);
+  res.json({
+    ...user,
+    playstyleTags: JSON.parse(user.playstyleTags || "[]"),
+  });
 });
 
 const updateSchema = z.object({
@@ -50,6 +58,7 @@ const updateSchema = z.object({
   region: z.string().optional(),
   languages: z.array(z.string()).optional(),
   bio: z.string().max(500).optional(),
+  playstyleTags: z.array(z.string()).max(4).optional(),
 });
 
 router.patch("/me", authenticate, async (req: Request, res: Response) => {
@@ -66,6 +75,8 @@ router.patch("/me", authenticate, async (req: Request, res: Response) => {
     if (value !== undefined) {
       if (key === "rolePrefs" || key === "languages") {
         data[key] = JSON.stringify(value);
+      } else if (key === "playstyleTags") {
+        data[key] = JSON.stringify(sanitizePlaystyleTags(value));
       } else {
         data[key] = value;
       }
@@ -78,7 +89,10 @@ router.patch("/me", authenticate, async (req: Request, res: Response) => {
   });
 
   const { passwordHash, ...safe } = user;
-  res.json(safe);
+  res.json({
+    ...safe,
+    playstyleTags: JSON.parse(safe.playstyleTags || "[]"),
+  });
 });
 
 router.post("/looking", authenticate, async (req: Request, res: Response) => {

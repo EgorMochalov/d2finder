@@ -11,6 +11,7 @@ interface User {
   region?: string;
   languages?: string;
   bio?: string;
+  playstyleTags?: string[] | string;
   isLooking?: boolean;
   lookingExpiry?: string;
 }

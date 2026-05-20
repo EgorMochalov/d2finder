@@ -37,6 +37,7 @@ export default function HomePage() {
           <Shield size={40} className="text-gold drop-shadow-lg" strokeWidth={1.5} />
         </div>
         <p className="text-accent text-xs font-semibold uppercase tracking-[0.2em] mb-3 font-display">Dota 2 · LFG</p>
+        <p className="text-muted/80 text-sm mb-4 max-w-md mx-auto">{t('home.playstyle_hook')}</p>
         <h1 className="font-display text-4xl md:text-6xl font-bold mb-4 leading-tight">
           <span className="bg-gradient-to-r from-gold via-white to-accent bg-clip-text text-transparent">
             {t('home.title')}

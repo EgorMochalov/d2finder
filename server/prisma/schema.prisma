@@ -42,6 +42,7 @@ model User {
   region        String?
   languages     String?    @default("[]")
   bio           String?
+  playstyleTags String?    @default("[]")
   isLooking     Boolean    @default(false)
   lookingExpiry DateTime?
   role          UserRole   @default(USER)

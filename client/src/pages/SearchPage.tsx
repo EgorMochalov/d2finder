@@ -7,7 +7,7 @@ import { useI18n } from '../lib/i18n';
 import { useDebounce } from '../lib/useDebounce';
 import { useOnlineUsers } from '../lib/socket';
 import { useToast } from '../components/Toast';
-import { Search as SearchIcon, Star, MapPin, X, SlidersHorizontal, MessageCircle, UserPlus, AlertCircle } from 'lucide-react';
+import { Search as SearchIcon, Star, MapPin, X, SlidersHorizontal, MessageCircle, UserPlus, AlertCircle, Sparkles } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import Modal from '../components/Modal';
 import { CardSkeleton } from '../components/Skeleton';
@@ -15,6 +15,13 @@ import EmptyState from '../components/EmptyState';
 import { ROLE_PREFS, roleLabelKey } from '../lib/positions';
 import { filterManageableTeams } from '../lib/teamUtils';
 import { getRankTier } from '../lib/rankStyle';
+import {
+  PLAYSTYLE_TAG_IDS,
+  playstyleTagKey,
+  parsePlaystyleTags,
+  playstyleMatchPercent,
+  type PlaystyleTagId,
+} from '../lib/playstyleTags';
 
 const REGIONS = ['Europe West', 'Europe East', 'Russia', 'US East', 'US West', 'SE Asia', 'China', 'South America', 'Australia', 'Japan'];
 const LANGUAGES = ['English', 'Russian', 'Chinese', 'Spanish', 'Portuguese', 'German', 'French', 'Ukrainian', 'Polish', 'Turkish'];
@@ -31,7 +38,8 @@ export default function SearchPage() {
   const [myTeams, setMyTeams] = useState<any[]>([]);
   const [invTgt, setInvTgt] = useState<any>(null);
   const [invErr, setInvErr] = useState('');
-  const [filters, setFilters] = useState({ rankMin: '', rankMax: '', region: '', position: '', language: '', query: '' });
+  const [filters, setFilters] = useState({ rankMin: '', rankMax: '', region: '', position: '', language: '', query: '', playstyle: '' });
+  const myPlaystyle = parsePlaystyleTags(user?.playstyleTags);
 
   const debouncedFilters = useDebounce(filters, 400);
 
@@ -52,7 +60,19 @@ export default function SearchPage() {
   }
 
   function apply(k: string, v: string) { setFilters((p) => ({ ...p, [k]: p[k as keyof typeof p] === v ? '' : v })); }
-  function clearF() { setFilters({ rankMin: '', rankMax: '', region: '', position: '', language: '', query: '' }); }
+  function clearF() { setFilters({ rankMin: '', rankMax: '', region: '', position: '', language: '', query: '', playstyle: '' }); }
+
+  function togglePlaystyleFilter(id: PlaystyleTagId) {
+    setFilters((p) => {
+      const list = p.playstyle ? p.playstyle.split(',').filter(Boolean) : [];
+      const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
+      return { ...p, playstyle: next.join(',') };
+    });
+  }
+
+  function isPlaystyleFilterActive(id: PlaystyleTagId) {
+    return filters.playstyle.split(',').filter(Boolean).includes(id);
+  }
 
   async function handleInvite(tid: string) {
     setInvErr('');
@@ -86,13 +106,49 @@ export default function SearchPage() {
               <div><label className="text-muted text-xs block mb-1.5">{t('search.position')}</label><div className="flex flex-wrap gap-1.5">{ROLE_PREFS.map((p) => <button key={p} onClick={() => apply('position', p)} className={`px-2.5 py-1 rounded-lg text-xs border transition ${filters.position === p ? 'bg-accent-dim border-accent/40 text-accent' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{t(roleLabelKey(p))}</button>)}</div></div>
               <div><label className="text-muted text-xs block mb-1.5">{t('search.region')}</label><div className="flex flex-wrap gap-1.5">{REGIONS.map((r) => <button key={r} onClick={() => apply('region', r)} className={`px-2.5 py-1 rounded-lg text-xs border transition ${filters.region === r ? 'bg-blue-dim border-blue/40 text-blue' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{r}</button>)}</div></div>
               <div><label className="field-label">{t('search.language')}</label><select value={filters.language} onChange={(e) => handleFilterChange('language', e.target.value)} className="glass-select w-full rounded-xl px-3 py-2 text-sm"><option value="">{t('placeholders.any')}</option>{LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}</select></div>
+              <div>
+                <label className="field-label flex items-center gap-1.5"><Sparkles size={14} className="text-accent" /> {t('search.playstyle')}</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {PLAYSTYLE_TAG_IDS.map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => togglePlaystyleFilter(id)}
+                      className={`px-2.5 py-1 rounded-lg text-xs border transition ${
+                        isPlaystyleFilterActive(id) ? 'chip-playstyle' : 'glass-input border-white/5 text-muted hover:text-text'
+                      }`}
+                    >
+                      {t(playstyleTagKey(id))}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <button onClick={doSearch} className="btn-primary w-full py-2.5 rounded-xl text-sm flex items-center justify-center gap-2"><SearchIcon size={16} /> {t('search.search')}</button>
             </div>
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          {hasF && <div className="flex flex-wrap gap-2 mb-4">{Object.entries(filters).filter(([, v]) => v).map(([k, v]) => <span key={k} className="chip chip-accent text-xs flex items-center gap-1">{k}: {v}<button onClick={() => setFilters((p) => ({ ...p, [k]: '' }))}><X size={12} /></button></span>)}</div>}
+          {hasF && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {Object.entries(filters).filter(([, v]) => v).flatMap(([k, v]) => {
+                if (k === 'playstyle') {
+                  return v.split(',').filter(Boolean).map((tag) => (
+                    <span key={`ps-${tag}`} className="chip chip-playstyle text-xs flex items-center gap-1">
+                      {t(playstyleTagKey(tag as PlaystyleTagId))}
+                      <button type="button" onClick={() => togglePlaystyleFilter(tag as PlaystyleTagId)}><X size={12} /></button>
+                    </span>
+                  ));
+                }
+                return (
+                  <span key={k} className="chip chip-accent text-xs flex items-center gap-1">
+                    {k}: {v}
+                    <button type="button" onClick={() => setFilters((p) => ({ ...p, [k]: '' }))}><X size={12} /></button>
+                  </span>
+                );
+              })}
+            </div>
+          )}
 
           {loading ? (
             <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -106,6 +162,8 @@ export default function SearchPage() {
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {players.map((p, i) => {
                   const tier = getRankTier(p.rank || 0);
+                  const pTags = parsePlaystyleTags(p.playstyleTags);
+                  const match = playstyleMatchPercent(pTags, myPlaystyle);
                   return (
                   <Link key={p.id} to={`/profile/${p.id}`} className="player-card block stagger-enter" style={{ animationDelay: `${i * 0.05}s` }}>
                     <div className="flex items-start gap-2.5 md:gap-3">
@@ -119,6 +177,9 @@ export default function SearchPage() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-text font-semibold truncate text-sm">{p.username}</span>
                               {p.isLooking && <span className="looking-badge">{t('profile.looking')}</span>}
+                              {match !== null && match > 0 && (
+                                <span className="match-badge" title={t('search.match')}>{match}%</span>
+                              )}
                             </div>
                             <div className="flex items-center gap-1.5 text-muted text-[11px] mt-1 flex-wrap">
                               <span className={tier.className}>{tier.label}</span>
@@ -132,7 +193,12 @@ export default function SearchPage() {
                             {user && user.id !== p.id && (<>{myTeams.length > 0 && <button onClick={() => setInvTgt(p)} className="p-1.5 rounded-lg text-muted hover:text-green hover:bg-surface-hover transition" title={t('search.invite')}><UserPlus size={14} /></button>}<button onClick={() => navigate(`/chat?user=${p.id}`)} className="p-1.5 rounded-lg text-muted hover:text-accent hover:bg-surface-hover transition" title={t('search.message')}><MessageCircle size={14} /></button></>)}
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-1 mt-1.5">{(p.rolePrefs as string[]).map((r: string) => <span key={r} className="chip">{t(roleLabelKey(r))}</span>)}</div>
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {(p.rolePrefs as string[]).map((r: string) => <span key={r} className="chip">{t(roleLabelKey(r))}</span>)}
+                          {pTags.map((tag) => (
+                            <span key={tag} className="chip-playstyle">{t(playstyleTagKey(tag as PlaystyleTagId))}</span>
+                          ))}
+                        </div>
                         {p.bio && <p className="text-muted text-[11px] mt-1.5 line-clamp-2 leading-relaxed">{p.bio}</p>}
                       </div>
                     </div>
