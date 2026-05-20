@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './lib/auth';
@@ -6,6 +6,7 @@ import { useSocket } from './lib/socket';
 import { I18nProvider } from './lib/i18n';
 import { ToastProvider } from './components/Toast';
 import { UnreadProvider } from './lib/unread';
+import { useEffect } from 'react';
 import NavBar from './components/NavBar';
 import AppBackground from './components/AppBackground';
 import BackButton from './components/BackButton';
@@ -30,6 +31,15 @@ function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
+}
+
+function PageLoader() {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 gap-3">
+      <div className="animate-spin rounded-full h-9 w-9 border-2 border-white/10 border-t-accent shadow-glow" />
+      <p className="text-muted text-xs uppercase tracking-widest font-display">Loading</p>
+    </div>
+  );
 }
 
 function AppContent() {
@@ -57,7 +67,7 @@ function AppContent() {
           <div className="max-w-7xl mx-auto px-4 pt-4">
             <BackButton />
           </div>
-          <Suspense fallback={null}>
+          <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
