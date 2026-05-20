@@ -59,7 +59,11 @@ export default function ChatPage() {
   }, [activeChat, user]);
 
   async function loadContacts() {
-    try { const [cc, all] = await Promise.all([api.chats.contacts(), api.teams.list()]); setContacts(cc); setTeamChats(all.filter((t: any) => t.members?.some((m: any) => m.userId === user!.id))); } catch {}
+    try {
+      const [cc, all] = await Promise.all([api.chats.contacts(), api.teams.list()]);
+      setContacts(cc);
+      setTeamChats(all.filter((t: any) => t.members?.some((m: any) => m.userId === user!.id)));
+    } catch (err: any) { toast('error', err.message); }
   }
   async function loadBlocked() { try { const b = await api.blocks.list(); setBlockedUsers(b.map((x: any) => x.blocked)); } catch {} }
 
@@ -80,7 +84,7 @@ export default function ChatPage() {
         const last = data.messages?.[data.messages.length - 1];
         return [{ userId: uid, username: name, lastMessage: last?.content || '' }, ...prev];
       });
-    } catch {}
+    } catch (err: any) { toast('error', err.message); }
   }
 
   async function openTeamChat(tid: string, tname: string) {
@@ -91,8 +95,14 @@ export default function ChatPage() {
     setActiveChat({ id: cid, type: 'TEAM', name: tname });
     markRead(cid);
     setActiveChatId(cid);
-    const [team, chat] = await Promise.all([api.teams.get(tid), api.chats.team(tid).catch(() => ({ messages: [] }))]);
-    setChatInfo({ type: 'TEAM', team }); setMessages(chat.messages); setShowList(false); setShowInfo(false);
+    try {
+      const [team, chat] = await Promise.all([api.teams.get(tid), api.chats.team(tid)]);
+      setChatInfo({ type: 'TEAM', team }); setMessages(chat.messages); setShowList(false); setShowInfo(false);
+    } catch (err: any) {
+      toast('error', err.message);
+      setActiveChat(null);
+      setActiveChatId(null);
+    }
   }
 
   function handleSend(e: React.FormEvent) {

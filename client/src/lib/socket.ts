@@ -50,20 +50,43 @@ export function getSocket() {
 }
 
 export function useOnlineUsers() {
+  const { token } = useAuth();
   const [online, setOnline] = useState<Set<string>>(onlineUsersRef.current);
 
   useEffect(() => {
-    const socket = getSocket();
-    if (!socket) return;
+    if (!token) {
+      setOnline(new Set());
+      return;
+    }
 
-    const handler = (userIds: string[]) => {
-      onlineUsersRef.current = new Set(userIds);
-      setOnline(new Set(userIds));
+    const attach = () => {
+      const socket = getSocket();
+      if (!socket) return undefined;
+
+      const handler = (userIds: string[]) => {
+        onlineUsersRef.current = new Set(userIds);
+        setOnline(new Set(userIds));
+      };
+
+      socket.on('online:update', handler);
+      return () => { socket.off('online:update', handler); };
     };
 
-    socket.on('online:update', handler);
-    return () => { socket.off('online:update', handler); };
-  }, []);
+    let cleanup = attach();
+    if (cleanup) return cleanup;
+
+    const t = window.setInterval(() => {
+      cleanup = attach();
+      if (cleanup) {
+        window.clearInterval(t);
+      }
+    }, 300);
+
+    return () => {
+      window.clearInterval(t);
+      cleanup?.();
+    };
+  }, [token]);
 
   return online;
 }

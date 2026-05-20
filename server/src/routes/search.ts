@@ -21,7 +21,7 @@ router.get("/teammates", async (req: Request, res: Response) => {
   }
 
   if (position) {
-    where.rolePrefs = { contains: position };
+    where.rolePrefs = { contains: position as string };
   }
 
   if (language) {

@@ -11,10 +11,11 @@ import { Search as SearchIcon, Star, MapPin, X, SlidersHorizontal, MessageCircle
 import { Helmet } from 'react-helmet-async';
 import Modal from '../components/Modal';
 import { CardSkeleton } from '../components/Skeleton';
+import { ROLE_PREFS, roleLabelKey } from '../lib/positions';
+import { filterManageableTeams } from '../lib/teamUtils';
 
 const REGIONS = ['Europe West', 'Europe East', 'Russia', 'US East', 'US West', 'SE Asia', 'China', 'South America', 'Australia', 'Japan'];
 const LANGUAGES = ['English', 'Russian', 'Chinese', 'Spanish', 'Portuguese', 'German', 'French', 'Ukrainian', 'Polish', 'Turkish'];
-const POSITIONS = ['1 Safe', '2 Mid', '3 Off', '4 Soft', '5 Hard'];
 
 export default function SearchPage() {
   const { user } = useAuth();
@@ -36,7 +37,7 @@ export default function SearchPage() {
   useEffect(() => { if (user) loadMyTeams(); }, [user]);
 
   async function loadMyTeams() {
-    try { const all = await api.teams.list(); setMyTeams(all.filter((t: any) => t.captainId === user!.id || t.members?.some((m: any) => m.userId === user!.id && (m.role === 'CAPTAIN' || m.role === 'VICE_CAPTAIN')))); } catch {}
+    try { const all = await api.teams.list(); setMyTeams(filterManageableTeams(all, user!.id)); } catch (err: any) { toast('error', err.message || 'Error'); }
   }
 
   async function doSearch() {
@@ -45,7 +46,7 @@ export default function SearchPage() {
       const p: Record<string, string> = {};
       Object.entries(debouncedFilters).forEach(([k, v]) => { if (v) p[k] = v; });
       setPlayers(await api.search.teammates(p));
-    } catch {} finally { setLoading(false); }
+    } catch (err: any) { toast('error', err.message || 'Error'); } finally { setLoading(false); }
   }
 
   function apply(k: string, v: string) { setFilters((p) => ({ ...p, [k]: p[k as keyof typeof p] === v ? '' : v })); }
@@ -80,7 +81,7 @@ export default function SearchPage() {
             <div className="space-y-5">
               <div><label className="field-label">{t('common.search')}</label><div className="relative"><input type="text" value={filters.query} onChange={(e) => handleFilterChange('query', e.target.value)} placeholder={t('placeholders.search_username')} className="glass-input w-full rounded-xl pl-8 pr-3 py-2 text-sm" /><SearchIcon size={14} className="absolute left-2.5 top-2.5 text-muted" /></div></div>
               <div><label className="text-muted text-xs block mb-1.5">{t('search.mmr')}</label><div className="flex gap-2"><input type="number" value={filters.rankMin} onChange={(e) => handleFilterChange('rankMin', e.target.value)} placeholder={t('search.from')} className="glass-input w-full rounded-xl px-3 py-2 text-sm" /><input type="number" value={filters.rankMax} onChange={(e) => handleFilterChange('rankMax', e.target.value)} placeholder={t('search.to')} className="glass-input w-full rounded-xl px-3 py-2 text-sm" /></div></div>
-              <div><label className="text-muted text-xs block mb-1.5">{t('search.position')}</label><div className="flex flex-wrap gap-1.5">{POSITIONS.map((p) => <button key={p} onClick={() => apply('position', p)} className={`px-2.5 py-1 rounded-lg text-xs border transition ${filters.position === p ? 'bg-accent-dim border-accent/40 text-accent' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{t('pos.' + p[0])}</button>)}</div></div>
+              <div><label className="text-muted text-xs block mb-1.5">{t('search.position')}</label><div className="flex flex-wrap gap-1.5">{ROLE_PREFS.map((p) => <button key={p} onClick={() => apply('position', p)} className={`px-2.5 py-1 rounded-lg text-xs border transition ${filters.position === p ? 'bg-accent-dim border-accent/40 text-accent' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{t(roleLabelKey(p))}</button>)}</div></div>
               <div><label className="text-muted text-xs block mb-1.5">{t('search.region')}</label><div className="flex flex-wrap gap-1.5">{REGIONS.map((r) => <button key={r} onClick={() => apply('region', r)} className={`px-2.5 py-1 rounded-lg text-xs border transition ${filters.region === r ? 'bg-blue-dim border-blue/40 text-blue' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{r}</button>)}</div></div>
               <div><label className="field-label">{t('search.language')}</label><select value={filters.language} onChange={(e) => handleFilterChange('language', e.target.value)} className="glass-select w-full rounded-xl px-3 py-2 text-sm"><option value="">{t('placeholders.any')}</option>{LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}</select></div>
               <button onClick={doSearch} className="btn-primary w-full py-2.5 rounded-xl text-sm flex items-center justify-center gap-2"><SearchIcon size={16} /> {t('search.search')}</button>
@@ -118,7 +119,7 @@ export default function SearchPage() {
                             {user && user.id !== p.id && (<>{myTeams.length > 0 && <button onClick={() => setInvTgt(p)} className="p-1.5 rounded-lg text-muted hover:text-green hover:bg-surface-hover transition" title={t('search.invite')}><UserPlus size={14} /></button>}<button onClick={() => navigate(`/chat?user=${p.id}`)} className="p-1.5 rounded-lg text-muted hover:text-accent hover:bg-surface-hover transition" title={t('search.message')}><MessageCircle size={14} /></button></>)}
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-1 mt-1.5">{(p.rolePrefs as string[]).map((r: string) => <span key={r} className="chip">{t('pos.' + r[0])}</span>)}</div>
+                        <div className="flex flex-wrap gap-1 mt-1.5">{(p.rolePrefs as string[]).map((r: string) => <span key={r} className="chip">{t(roleLabelKey(r))}</span>)}</div>
                         {p.bio && <p className="text-muted text-[11px] mt-1.5 line-clamp-2 leading-relaxed">{p.bio}</p>}
                       </div>
                     </div>

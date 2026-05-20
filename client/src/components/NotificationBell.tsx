@@ -1,20 +1,37 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
+import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
+import { getSocket } from '../lib/socket';
 import { Bell, CheckCheck } from 'lucide-react';
 
 export default function NotificationBell() {
+  const { user } = useAuth();
   const { t } = useI18n();
   const [notifs, setNotifs] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!user) {
+      setNotifs([]);
+      return;
+    }
     loadNotifs();
-    const interval = setInterval(loadNotifs, 30000);
+    const interval = setInterval(loadNotifs, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const socket = getSocket();
+    if (!socket) return;
+
+    const onNotif = () => loadNotifs();
+    socket.on('notification', onNotif);
+    return () => { socket.off('notification', onNotif); };
+  }, [user]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {

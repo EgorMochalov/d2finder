@@ -47,24 +47,26 @@ app.use("/api/blocks", blockRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/upload", uploadRoutes);
 
-app.use(errorHandler);
-
-app.post("/api/seed", async (req, res) => {
-  const key = req.headers["x-seed-key"];
-  if (!key || key !== process.env.SEED_KEY) {
-    return res.status(403).json({ error: "Invalid seed key" });
-  }
-  try {
-    await seed();
-    res.json({ success: true });
-  } catch (e: any) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
+
+if (process.env.SEED_KEY) {
+  app.post("/api/seed", async (req, res) => {
+    const key = req.headers["x-seed-key"];
+    if (!key || key !== process.env.SEED_KEY) {
+      return res.status(403).json({ error: "Invalid seed key" });
+    }
+    try {
+      await seed();
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+}
+
+app.use(errorHandler);
 
 setupSocket(httpServer);
 startCronJobs();

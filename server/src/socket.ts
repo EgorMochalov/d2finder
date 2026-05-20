@@ -3,12 +3,20 @@ import { Server } from "socket.io";
 import prisma from "./lib/prisma";
 import { verifyToken } from "./lib/jwt";
 import { isOriginAllowed } from "./lib/cors";
+import {
+  MAX_MESSAGE_LENGTH,
+  privateChatPeerId,
+  isValidPrivateChatId,
+  teamIdFromChatId,
+} from "./lib/chat";
 
 const onlineUsers = new Map<string, string>();
 
-function privateChatPeerId(chatId: string, userId: string): string {
-  const parts = chatId.split("_");
-  return parts.find((id) => id !== userId) || "";
+async function isTeamMember(teamId: string, userId: string): Promise<boolean> {
+  const member = await prisma.teamMember.findUnique({
+    where: { teamId_userId: { teamId, userId } },
+  });
+  return !!member;
 }
 
 export function setupSocket(httpServer: HttpServer) {
@@ -56,44 +64,55 @@ export function setupSocket(httpServer: HttpServer) {
     });
 
     socket.on("message:send", async (data: { chatType: string; chatId: string; content: string }) => {
-      const content = data.content?.trim();
-      if (!content) return;
+      try {
+        const content = data.content?.trim();
+        if (!content || content.length > MAX_MESSAGE_LENGTH) return;
 
-      if (data.chatType === "PRIVATE") {
-        const otherId = privateChatPeerId(data.chatId, userId);
-        const blocked = await prisma.blockedUser.findFirst({
-          where: {
-            OR: [
-              { blockerId: userId, blockedId: otherId },
-              { blockerId: otherId, blockedId: userId },
-            ],
+        if (data.chatType === "PRIVATE") {
+          if (!isValidPrivateChatId(data.chatId, userId)) return;
+
+          const otherId = privateChatPeerId(data.chatId, userId);
+          const blocked = await prisma.blockedUser.findFirst({
+            where: {
+              OR: [
+                { blockerId: userId, blockedId: otherId },
+                { blockerId: otherId, blockedId: userId },
+              ],
+            },
+          });
+          if (blocked) return;
+        }
+
+        if (data.chatType === "TEAM") {
+          const teamId = teamIdFromChatId(data.chatId);
+          if (!teamId || !(await isTeamMember(teamId, userId))) return;
+        }
+
+        const message = await prisma.message.create({
+          data: {
+            chatType: data.chatType as "PRIVATE" | "TEAM",
+            chatId: data.chatId,
+            senderId: userId,
+            content,
+          },
+          include: {
+            sender: { select: { id: true, username: true, avatarUrl: true } },
           },
         });
-        if (blocked) return;
-      }
 
-      const message = await prisma.message.create({
-        data: {
-          chatType: data.chatType as any,
-          chatId: data.chatId,
-          senderId: userId,
-          content,
-        },
-        include: {
-          sender: { select: { id: true, username: true, avatarUrl: true } },
-        },
-      });
+        io.to(`chat:${data.chatId}`).emit("message:new", message);
 
-      io.to(`chat:${data.chatId}`).emit("message:new", message);
-
-      if (data.chatType === "PRIVATE") {
-        const otherUserId = privateChatPeerId(data.chatId, userId);
-        if (otherUserId) {
-          io.to(`user:${otherUserId}`).emit("notification", {
-            type: "new_message",
-            title: `New message from ${username}`,
-          });
+        if (data.chatType === "PRIVATE") {
+          const otherUserId = privateChatPeerId(data.chatId, userId);
+          if (otherUserId) {
+            io.to(`user:${otherUserId}`).emit("notification", {
+              type: "new_message",
+              title: `New message from ${username}`,
+            });
+          }
         }
+      } catch (err) {
+        console.error("[WS] message:send error:", err);
       }
     });
 

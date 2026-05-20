@@ -9,10 +9,11 @@ import RankPicker from '../components/RankPicker';
 import Modal from '../components/Modal';
 import { UserPlus, MessageCircle, Shield, Camera, Save, Star, MapPin, Globe, Square, Play, AlertCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { ROLE_PREFS, roleLabelKey } from '../lib/positions';
+import { filterManageableTeams } from '../lib/teamUtils';
 
 const REGIONS = ['Europe West', 'Europe East', 'Russia', 'US East', 'US West', 'SE Asia', 'China', 'South America', 'Australia', 'Japan'];
 const LANGUAGES = ['English', 'Russian', 'Chinese', 'Spanish', 'Portuguese', 'German', 'French', 'Ukrainian', 'Polish', 'Turkish'];
-const POSITIONS = ['Pos 1', 'Pos 2', 'Pos 3', 'Pos 4', 'Pos 5'];
 
 export default function ProfilePage() {
   const { id } = useParams();
@@ -60,11 +61,11 @@ export default function ProfilePage() {
       setRegion(d.region || '');
       try { setLanguages(JSON.parse(d.languages || '[]')); } catch { setLanguages([]); }
       setBio(d.bio || '');
-    } catch {} finally { setLoading(false); }
+    } catch (err: any) { toast('error', err.message || 'Error'); } finally { setLoading(false); }
   }
 
   async function loadMyTeams() {
-    try { const all = await api.teams.list(); setMyTeams(all.filter((t: any) => t.captainId === me!.id || t.members?.some((m: any) => m.userId === me!.id && (m.role === 'CAPTAIN' || m.role === 'VICE_CAPTAIN')))); } catch {}
+    try { const all = await api.teams.list(); setMyTeams(filterManageableTeams(all, me!.id)); } catch (err: any) { toast('error', err.message); }
   }
 
   async function handleInvite(tid: string) {
@@ -77,7 +78,7 @@ export default function ProfilePage() {
     try {
       await api.users.update({ rank, rolePrefs, region, languages, bio });
       setEditing(false); await refreshUser(); await loadProfile();
-    } catch {} finally { setSaving(false); }
+    } catch (err: any) { toast('error', err.message); } finally { setSaving(false); }
   }
 
   async function toggleLooking() {
@@ -142,7 +143,7 @@ export default function ProfilePage() {
             <div><label className="field-label">{t('profile.rank')}</label><RankPicker value={rank} onChange={setRank} /></div>
 
             <div><label className="field-label">{t('profile.roles')}</label>
-              <div className="flex flex-wrap gap-1.5">{POSITIONS.map((p) => <button key={p} type="button" onClick={() => setRolePrefs(toggleChip(rolePrefs, p))} className={`px-3 py-1.5 rounded-lg text-xs border transition ${rolePrefs.includes(p) ? 'bg-accent-dim border-accent/30 text-accent' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{t('pos.' + p.slice(-1))}</button>)}</div>
+              <div className="flex flex-wrap gap-1.5">{ROLE_PREFS.map((p) => <button key={p} type="button" onClick={() => setRolePrefs(toggleChip(rolePrefs, p))} className={`px-3 py-1.5 rounded-lg text-xs border transition ${rolePrefs.includes(p) ? 'bg-accent-dim border-accent/30 text-accent' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{t(roleLabelKey(p))}</button>)}</div>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-5">
@@ -169,7 +170,7 @@ export default function ProfilePage() {
             </div>
             <div className="glass rounded-xl p-4">
               <p className="text-muted text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1.5 mb-2"><Shield size={12} /> {t('profile.roles')}</p>
-              {rolePrefs.length > 0 ? <div className="flex flex-wrap gap-1">{rolePrefs.map((r: string) => <span key={r} className="chip">{t('pos.' + r.slice(-1))}</span>)}</div> : <p className="text-text text-sm">—</p>}
+              {rolePrefs.length > 0 ? <div className="flex flex-wrap gap-1">{rolePrefs.map((r: string) => <span key={r} className="chip">{t(roleLabelKey(r))}</span>)}</div> : <p className="text-text text-sm">—</p>}
             </div>
             <div className="glass rounded-xl p-4">
               <p className="text-muted text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1.5 mb-2"><MapPin size={12} /> {t('profile.region')}</p>

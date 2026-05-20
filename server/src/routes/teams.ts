@@ -57,7 +57,10 @@ router.get("/", async (req: Request, res: Response) => {
     include: {
       captain: { select: { id: true, username: true, avatarUrl: true } },
       members: { include: { user: { select: { id: true, username: true, avatarUrl: true } } } },
+      _count: { select: { members: true } },
     },
+    orderBy: { createdAt: "desc" },
+    take: 100,
   });
   res.json(teams);
 });
