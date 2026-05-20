@@ -187,13 +187,13 @@ export default function ChatPage() {
                 <Menu size={16} />
               </button>
               {teamChats.map((chat: any) => (
-                <button key={chat.id} onClick={() => openTeamChat(chat.id, chat.name)} className="relative mb-1.5 shrink-0"
-                  title={chat.name}><AvatarImg src={chat.logoUrl} alt={chat.name} className={`w-9 h-9 text-[10px] font-bold ${activeChat?.id === `team:${chat.id}` ? 'ring-2 ring-accent' : ''}`} square />{unread[`team:${chat.id}`] > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-glow">{unread[`team:${chat.id}`]}</span>}</button>
+                <button key={chat.id} onClick={() => openTeamChat(chat.id, chat.name)} className={`relative mb-1.5 shrink-0 ${activeChat?.id === `team:${chat.id}` ? 'ring-2 ring-accent' : ''}`}
+                  title={chat.name}><AvatarImg src={chat.logoUrl} alt={chat.name} className="w-9 h-9 text-[10px] font-bold" square />{unread[`team:${chat.id}`] > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-glow">{unread[`team:${chat.id}`]}</span>}</button>
               ))}
               {teamChats.length > 0 && contacts.length > 0 && <div className="w-6 h-px bg-white/10 my-1 shrink-0" />}
               {contacts.map((c: any) => (
-                <button key={c.userId} onClick={() => openPrivateChat(c.userId)} className="relative mb-1.5 shrink-0"
-                  title={c.username}><AvatarImg src={c.avatarUrl} alt={c.username || ''} className={`w-9 h-9 text-[10px] ${activeChat?.name === c.username ? 'ring-2 ring-accent' : ''}`} />{unread[c.userId] > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-glow">{unread[c.userId]}</span>}</button>
+                <button key={c.userId} onClick={() => openPrivateChat(c.userId)} className={`relative mb-1.5 shrink-0 ${activeChat?.name === c.username ? 'ring-2 ring-accent' : ''}`}
+                  title={c.username}><AvatarImg src={c.avatarUrl} alt={c.username || ''} className="w-9 h-9 text-[10px]" />{unread[c.userId] > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-glow">{unread[c.userId]}</span>}</button>
               ))}
             </div>
           )}

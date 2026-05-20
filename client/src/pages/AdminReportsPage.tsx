@@ -21,11 +21,11 @@ export default function AdminReportsPage() {
   }
 
   async function handleResolve(id: string) {
-    try { await api.reports.update(id, 'RESOLVED'); load(); } catch {}
+    try { await api.reports.resolve(id, 'dismiss'); load(); } catch {}
   }
 
   async function handleDismiss(id: string) {
-    try { await api.reports.update(id, 'DISMISSED'); load(); } catch {}
+    try { await api.reports.resolve(id, 'ban'); load(); } catch {}
   }
 
   if (!user || user.role !== 'ADMIN') {

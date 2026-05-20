@@ -127,6 +127,13 @@ export const api = {
   stats: {
     get: () => request<{ users: number; teams: number }>('/stats'),
   },
+  reports: {
+    create: (data: { reportedUserId?: string; reportedTeamId?: string; reason: string; description?: string }) =>
+      request<any>('/reports', { method: 'POST', body: data }),
+    list: () => request<any[]>('/reports'),
+    resolve: (id: string, action: 'dismiss' | 'ban') =>
+      request<any>(`/reports/${id}`, { method: 'PATCH', body: { action } }),
+  },
   upload: {
     avatar: async (file: File) => {
       if (!API_URL) throw new Error('API не настроен');
@@ -155,12 +162,5 @@ export const api = {
       if (!res.ok) { const err = await res.json().catch(() => ({ error: 'Upload failed' })); throw new Error(err.error || 'Upload failed'); }
       return res.json();
     },
-  },
-  reports: {
-    create: (data: { reportedUserId?: string; reportedTeamId?: string; reason: string; description?: string }) =>
-      request<any>('/reports', { method: 'POST', body: data }),
-    list: () => request<any[]>('/reports'),
-    update: (id: string, status: string) =>
-      request<any>(`/reports/${id}`, { method: 'PATCH', body: { status } }),
   },
 };

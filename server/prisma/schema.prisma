@@ -30,21 +30,6 @@ enum ChatType {
   TEAM
 }
 
-enum ReportStatus {
-  PENDING
-  RESOLVED
-  DISMISSED
-}
-
-enum ReportReason {
-  SPAM
-  HARASSMENT
-  IMPERSONATION
-  CHEATING
-  INAPPROPRIATE
-  OTHER
-}
-
 model User {
   id            String     @id @default(cuid())
   username      String     @unique
@@ -76,9 +61,7 @@ model User {
   captainTeams          Team[]            @relation("CaptainTeams")
   blockedUsers           BlockedUser[]     @relation("BlockedBy")
   blockedBy              BlockedUser[]     @relation("BlockedTarget")
-  clanWarLookings       ClanWarLooking[]     @relation("UserClanWarLooking")
-  reports               Report[]             @relation("ReportedBy")
-  reportedReports       Report[]             @relation("ReportedUser")
+  clanWarLookings       ClanWarLooking[]  @relation("UserClanWarLooking")
 
   @@map("users")
 }
@@ -126,7 +109,6 @@ model Team {
   clanWars1       ClanWar[]         @relation("ClanWarTeam1")
   clanWars2       ClanWar[]         @relation("ClanWarTeam2")
   clanWarLookings ClanWarLooking[]  @relation("TeamClanWarLooking")
-  reports         Report[]
 
   @@map("teams")
 }
@@ -246,21 +228,4 @@ model BlockedUser {
 
   @@unique([blockerId, blockedId])
   @@map("blocked_users")
-}
-
-model Report {
-  id          String       @id @default(cuid())
-  reporterId  String
-  reportedUserId String?
-  reportedTeamId String?
-  reason      ReportReason
-  description String?
-  status      ReportStatus @default(PENDING)
-  createdAt   DateTime     @default(now())
-
-  reporter User  @relation("ReportedBy", fields: [reporterId], references: [id], onDelete: Cascade)
-  reportedUser User? @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: SetNull)
-  reportedTeam Team? @relation(fields: [reportedTeamId], references: [id], onDelete: SetNull)
-
-  @@map("reports")
 }
