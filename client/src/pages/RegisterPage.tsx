@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { useI18n } from '../lib/i18n';
+import { useI18n, translateApiError } from '../lib/i18n';
 import { Shield, AlertCircle } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -30,7 +30,7 @@ export default function RegisterPage() {
       const res = await api.auth.register({ username, email, password });
       login(res.token, res.user);
       navigate('/');
-    } catch (err: any) { setErrors({ form: err.message }); }
+    } catch (err: any) { setErrors({ form: translateApiError(err, t) }); }
   }
 
   return (

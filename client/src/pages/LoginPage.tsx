@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { useI18n } from '../lib/i18n';
+import { useI18n, translateApiError } from '../lib/i18n';
 import { Shield, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
@@ -30,7 +30,7 @@ export default function LoginPage() {
       const res = await api.auth.login({ login, password });
       authLogin(res.token, res.user);
       navigate('/');
-    } catch (err: any) { setError(err.message); }
+    } catch (err: any) { setError(translateApiError(err, t)); }
   }
 
   return (

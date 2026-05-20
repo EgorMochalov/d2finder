@@ -48,8 +48,8 @@ const groups: GroupDef[] = [
     page: '/teams',
     steps: [
       { icon: Users, target: '[data-tour="create-team"]', side: 'right', titleKey: 'tour.step_create_btn', descKey: 'tour.step_create_btn_desc', hintKey: 'tour.step_create_btn_hint', trigger: 'click', waitForTarget: '[data-tour="team-modal"]' },
-      { icon: Edit3, target: '[data-tour="team-name-input"]', side: 'right', titleKey: 'tour.step_team_name', descKey: 'tour.step_team_name_desc', hintKey: 'tour.step_team_name_hint', trigger: 'input', minInput: 2, waitForTarget: '[data-tour="team-name-input"]' },
-      { icon: Edit3, target: '[data-tour="team-tag-input"]', side: 'right', titleKey: 'tour.step_team_tag', descKey: 'tour.step_team_tag_desc', hintKey: 'tour.step_team_tag_hint', trigger: 'input', minInput: 2, waitForTarget: '[data-tour="team-tag-input"]' },
+      { icon: Edit3, target: '[data-tour="team-name-input"]', side: 'bottom', titleKey: 'tour.step_team_name', descKey: 'tour.step_team_name_desc', hintKey: 'tour.step_team_name_hint', trigger: 'input', minInput: 2, waitForTarget: '[data-tour="team-name-input"]' },
+      { icon: Edit3, target: '[data-tour="team-tag-input"]', side: 'bottom', titleKey: 'tour.step_team_tag', descKey: 'tour.step_team_tag_desc', hintKey: 'tour.step_team_tag_hint', trigger: 'input', minInput: 2, waitForTarget: '[data-tour="team-tag-input"]' },
       { icon: Send, target: '[data-tour="team-submit-btn"]', side: 'right', titleKey: 'tour.step_team_submit', descKey: 'tour.step_team_submit_desc', hintKey: 'tour.step_team_submit_hint', trigger: 'click' },
       { icon: Users, target: '[data-tour="team-card-mine"]', titleKey: 'tour.step_team_click', descKey: 'tour.step_team_click_desc', hintKey: 'tour.step_team_click_hint', trigger: 'click' },
     ],
@@ -66,7 +66,7 @@ const groups: GroupDef[] = [
     page: '/chat',
     steps: [
       { icon: MessageCircle, target: '[data-tour="chat-sidebar"]', side: 'right', titleKey: 'tour.step_chat_sidebar', descKey: 'tour.step_chat_sidebar_desc', hintKey: 'tour.step_chat_sidebar_hint', trigger: 'click' },
-      { icon: MessageCircle, target: '[data-tour="chat-input"]', side: 'right', titleKey: 'tour.step_chat_message', descKey: 'tour.step_chat_message_desc', hintKey: 'tour.step_chat_message_hint', trigger: 'enter' },
+      { icon: MessageCircle, target: '[data-tour="chat-input"]', side: 'bottom', titleKey: 'tour.step_chat_message', descKey: 'tour.step_chat_message_desc', hintKey: 'tour.step_chat_message_hint', trigger: 'enter' },
       { icon: MessageCircle, titleKey: 'tour.step_chat_done', descKey: 'tour.step_chat_done_desc', trigger: 'next' },
     ],
   },

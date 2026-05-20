@@ -201,7 +201,7 @@ export default function DraftSimulator() {
               </div>
 
               {/* Action bar - always visible between filters and grid */}
-              <div className="flex items-center justify-between gap-2 flex-wrap mb-3 p-2 rounded-xl bg-surface/40 border border-white/5">
+              <div className="flex items-center justify-between gap-2 flex-wrap mb-3 p-2 rounded-xl border border-white/5">
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full shrink-0 ${currentPhase.team === 'Radiant' ? 'bg-green' : 'bg-accent'}`} />
                   <div>

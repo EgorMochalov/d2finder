@@ -243,6 +243,10 @@ const ru: Record<string, string> = {
   'chat.blocked': 'Пользователь заблокирован',
   'chat.unblocked': 'Пользователь разблокирован',
 
+  'errors.invalid_credentials': 'Неверный логин или пароль',
+  'errors.user_exists': 'Пользователь уже существует',
+  'errors.server_error': 'Ошибка сервера. Попробуйте позже.',
+
   'draft.title': 'Симулятор драфта',
   'draft.reset': 'Сбросить',
   'draft.complete': 'Драфт завершён!',
@@ -596,6 +600,10 @@ const translations: Record<Lang, Record<string, string>> = {
     'chat.blocked': 'User blocked',
     'chat.unblocked': 'User unblocked',
 
+    'errors.invalid_credentials': 'Invalid email or password',
+    'errors.user_exists': 'User already exists',
+    'errors.server_error': 'Server error. Try again later.',
+
     'draft.title': 'Draft Simulator',
     'draft.reset': 'Reset',
     'draft.complete': 'Draft Complete!',
@@ -734,3 +742,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 }
 
 export function useI18n() { return useContext(Ctx); }
+
+const ERROR_MAP: Record<string, string> = {
+  'Invalid credentials': 'errors.invalid_credentials',
+  'User already exists': 'errors.user_exists',
+  'Invalid email or password': 'errors.invalid_credentials',
+  'Invalid username or password': 'errors.invalid_credentials',
+};
+
+export function translateApiError(err: unknown, t: (key: string) => string): string {
+  const msg = err && typeof err === 'object' && 'message' in err ? (err as any).message : String(err);
+  return t(ERROR_MAP[msg] || 'errors.server_error');
+}
