@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { api } from '../lib/api';
+import { api, resolveMediaUrl } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useToast } from '../components/Toast';
@@ -122,8 +122,8 @@ export default function ChatPage() {
             <div className="flex-1 overflow-y-auto">
               {teamChats.length > 0 && <div className="px-3 pt-3 pb-1"><p className="text-muted text-[10px] uppercase tracking-wider font-semibold px-2">{t('chat.team')}</p></div>}
               {teamChats.map((chat: any) => (
-                <button key={chat.id} onClick={() => openTeamChat(chat.id, chat.name)} className={`w-full flex items-center gap-3 px-4 py-3 transition glass-hover ${activeChat?.id === `team:${chat.id}` ? 'bg-surface-hover border-l-2 border-accent' : ''}`}>
-                  <div className="avatar-square w-9 h-9 text-xs font-bold shrink-0">{chat.logoUrl ? <img src={chat.logoUrl} alt="" className="w-full h-full object-cover" /> : chat.tag}</div>
+                  <button key={chat.id} onClick={() => openTeamChat(chat.id, chat.name)} className={`w-full flex items-center gap-3 px-4 py-3 transition glass-hover ${activeChat?.id === `team:${chat.id}` ? 'bg-surface-hover border-l-2 border-accent' : ''}`}>
+                  <div className="avatar-square w-9 h-9 text-xs font-bold shrink-0">{chat.logoUrl ? <img src={resolveMediaUrl(chat.logoUrl)} alt="" className="w-full h-full object-cover" /> : chat.tag}</div>
                   <div className="min-w-0 flex-1 text-left"><p className="text-text text-sm font-medium truncate">{chat.name}</p><p className="text-muted text-xs">{chat._count?.members || chat.members?.length || 0} {t('common.members')}</p></div>
                   <ChevronRight size={14} className="text-muted shrink-0" />
                 </button>
@@ -131,7 +131,7 @@ export default function ChatPage() {
               {contacts.length > 0 && <div className="px-3 pt-4 pb-1"><p className="text-muted text-[10px] uppercase tracking-wider font-semibold px-2">{t('chat.direct')}</p></div>}
               {contacts.map((c: any) => (
                 <button key={c.userId} onClick={() => openPrivateChat(c.userId)} className={`w-full flex items-center gap-3 px-4 py-3 transition glass-hover ${activeChat?.name === c.username ? 'bg-surface-hover border-l-2 border-accent' : ''}`}>
-                  <div className="avatar w-9 h-9 text-sm shrink-0 overflow-hidden">{c.avatarUrl ? <img src={c.avatarUrl} alt="" className="w-full h-full object-cover" /> : (c.username?.[0]?.toUpperCase() || '?')}</div>
+                  <div className="avatar w-9 h-9 text-sm shrink-0 overflow-hidden">{c.avatarUrl ? <img src={resolveMediaUrl(c.avatarUrl)} alt="" className="w-full h-full object-cover" /> : (c.username?.[0]?.toUpperCase() || '?')}</div>
                   <div className="min-w-0 flex-1 text-left"><p className="text-text text-sm font-medium truncate">{c.username}</p><p className="text-muted text-xs truncate">{c.lastMessage}</p></div>
                   <ChevronRight size={14} className="text-muted shrink-0" />
                 </button>
@@ -148,12 +148,12 @@ export default function ChatPage() {
               </button>
               {teamChats.map((chat: any) => (
                 <button key={chat.id} onClick={() => openTeamChat(chat.id, chat.name)} className={`avatar-square w-9 h-9 text-[10px] font-bold mb-1.5 shrink-0 ${activeChat?.id === `team:${chat.id}` ? 'ring-2 ring-accent' : ''}`}
-                  title={chat.name}>{chat.logoUrl ? <img src={chat.logoUrl} alt="" className="w-full h-full object-cover" /> : chat.tag}</button>
+                  title={chat.name}>{chat.logoUrl ? <img src={resolveMediaUrl(chat.logoUrl)} alt="" className="w-full h-full object-cover" /> : chat.tag}</button>
               ))}
               {teamChats.length > 0 && contacts.length > 0 && <div className="w-6 h-px bg-white/10 my-1 shrink-0" />}
               {contacts.map((c: any) => (
                 <button key={c.userId} onClick={() => openPrivateChat(c.userId)} className={`avatar w-9 h-9 text-[10px] mb-1.5 shrink-0 overflow-hidden ${activeChat?.name === c.username ? 'ring-2 ring-accent' : ''}`}
-                  title={c.username}>{c.avatarUrl ? <img src={c.avatarUrl} alt="" className="w-full h-full object-cover" /> : (c.username?.[0]?.toUpperCase() || '?')}</button>
+                  title={c.username}>{c.avatarUrl ? <img src={resolveMediaUrl(c.avatarUrl)} alt="" className="w-full h-full object-cover" /> : (c.username?.[0]?.toUpperCase() || '?')}</button>
               ))}
             </div>
           )}
@@ -201,14 +201,14 @@ export default function ChatPage() {
               </div>
               {chatInfo.type === 'TEAM' && chatInfo.team && (
                 <div className="space-y-5">
-                  <div className="flex items-center gap-3"><div className="avatar-square w-12 h-12 text-lg">{chatInfo.team.logoUrl ? <img src={chatInfo.team.logoUrl} alt="" className="w-full h-full object-cover" /> : chatInfo.team.tag}</div><div className="min-w-0"><p className="text-text font-medium text-sm truncate">{chatInfo.team.name}</p><p className="text-muted text-xs">{t('teams.captain')}: {chatInfo.team.captain?.username}</p></div></div>
-                  <div className="border-t border-white/5 pt-4"><p className="text-muted text-xs font-semibold uppercase tracking-wider mb-3">{t('teams.members')} ({chatInfo.team.members?.length || 0})</p><div className="space-y-1">{chatInfo.team.members?.map((m: any) => <Link key={m.id} to={`/profile/${m.userId}`} onClick={() => setShowInfo(false)} className="flex items-center gap-2 p-2 rounded-lg glass-hover"><div className="avatar w-8 h-8 text-xs overflow-hidden">{m.user?.avatarUrl ? <img src={m.user.avatarUrl} alt="" className="w-full h-full object-cover" /> : (m.user?.username?.[0]?.toUpperCase() || '?')}</div><span className="text-text text-sm">{m.user?.username}</span></Link>)}</div></div>
+                  <div className="flex items-center gap-3"><div className="avatar-square w-12 h-12 text-lg">{chatInfo.team.logoUrl ? <img src={resolveMediaUrl(chatInfo.team.logoUrl)} alt="" className="w-full h-full object-cover" /> : chatInfo.team.tag}</div><div className="min-w-0"><p className="text-text font-medium text-sm truncate">{chatInfo.team.name}</p><p className="text-muted text-xs">{t('teams.captain')}: {chatInfo.team.captain?.username}</p></div></div>
+                  <div className="border-t border-white/5 pt-4"><p className="text-muted text-xs font-semibold uppercase tracking-wider mb-3">{t('teams.members')} ({chatInfo.team.members?.length || 0})</p><div className="space-y-1">{chatInfo.team.members?.map((m: any) => <Link key={m.id} to={`/profile/${m.userId}`} onClick={() => setShowInfo(false)} className="flex items-center gap-2 p-2 rounded-lg glass-hover"><div className="avatar w-8 h-8 text-xs overflow-hidden">{m.user?.avatarUrl ? <img src={resolveMediaUrl(m.user.avatarUrl)} alt="" className="w-full h-full object-cover" /> : (m.user?.username?.[0]?.toUpperCase() || '?')}</div><span className="text-text text-sm">{m.user?.username}</span></Link>)}</div></div>
                 </div>
               )}
               {chatInfo.type === 'PRIVATE' && (
                 <div className="space-y-5">
                   <Link to={`/profile/${oid}`} onClick={() => setShowInfo(false)} className="flex items-center gap-3 glass-hover p-2 rounded-xl -mx-2">
-                    <div className="avatar w-12 h-12 text-lg shrink-0 overflow-hidden">{chatInfo.avatarUrl ? <img src={chatInfo.avatarUrl} alt="" className="w-full h-full object-cover" /> : (chatInfo.username?.[0]?.toUpperCase() || '?')}</div>
+                    <div className="avatar w-12 h-12 text-lg shrink-0 overflow-hidden">{chatInfo.avatarUrl ? <img src={resolveMediaUrl(chatInfo.avatarUrl)} alt="" className="w-full h-full object-cover" /> : (chatInfo.username?.[0]?.toUpperCase() || '?')}</div>
                     <p className="text-text font-medium text-sm">{chatInfo.username}</p>
                   </Link>
                   <div className="border-t border-white/5 pt-4 space-y-2">

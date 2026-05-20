@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { api } from '../lib/api';
+import { api, resolveMediaUrl } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { Shield, MessageCircle, UserPlus, Star, MapPin, Globe, Play, Square, Save, AlertCircle, Camera } from 'lucide-react';
@@ -106,7 +106,7 @@ export default function ProfilePage() {
         <div className="relative p-6 md:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5">
           <div className="relative shrink-0">
             <div className="avatar w-20 h-20 md:w-24 md:h-24 text-3xl md:text-4xl ring-2 ring-accent/30 shadow-xl overflow-hidden">
-              {profile.avatarUrl ? <img src={profile.avatarUrl} alt="" className="w-full h-full object-cover" /> : (profile.username?.[0]?.toUpperCase() || '?')}
+              {profile.avatarUrl ? <img src={resolveMediaUrl(profile.avatarUrl)} alt="" className="w-full h-full object-cover" /> : (profile.username?.[0]?.toUpperCase() || '?')}
             </div>
             {isOwn && <>
               <button onClick={() => document.getElementById('avatar-input')?.click()} className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full glass-strong flex items-center justify-center text-muted hover:text-text transition shadow-lg" disabled={uploading}><Camera size={13} /></button>
@@ -193,7 +193,7 @@ export default function ProfilePage() {
       <Modal open={showInvite} onClose={() => { setShowInvite(false); setInviteErr(''); }} title={t('profile.invite_to', { name: profile?.username || '' })}>
         {myTeams.length === 0 ? <p className="text-muted text-sm">{t('profile.no_teams_invite')}</p> : <>
           <p className="text-muted text-sm mb-4">{t('teams.invite')}:</p>
-          <div className="space-y-2 mb-4">{myTeams.map((tm: any) => <button key={tm.id} onClick={() => handleInvite(tm.id)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface border border-white/5 glass-hover text-left"><div className="avatar-square w-10 h-10 text-sm">{tm.logoUrl ? <img src={tm.logoUrl} alt="" className="w-full h-full object-cover" /> : tm.tag}</div><div><p className="text-text text-sm font-medium">{tm.name}</p><p className="text-muted text-xs">[{tm.tag}] · {tm._count?.members || tm.members?.length || 0} {t('common.members')}</p></div></button>)}</div>
+          <div className="space-y-2 mb-4">{myTeams.map((tm: any) => <button key={tm.id} onClick={() => handleInvite(tm.id)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface border border-white/5 glass-hover text-left"><div className="avatar-square w-10 h-10 text-sm">{tm.logoUrl ? <img src={resolveMediaUrl(tm.logoUrl)} alt="" className="w-full h-full object-cover" /> : tm.tag}</div><div><p className="text-text text-sm font-medium">{tm.name}</p><p className="text-muted text-xs">[{tm.tag}] · {tm._count?.members || tm.members?.length || 0} {t('common.members')}</p></div></button>)}</div>
           {inviteErr && <p className="text-accent text-xs flex items-center gap-1 mb-3"><AlertCircle size={12} /> {inviteErr}</p>}
         </>}
         <button onClick={() => { setShowInvite(false); setInviteErr(''); }} className="btn-ghost w-full py-2.5 rounded-xl text-sm">{t('common.cancel')}</button>

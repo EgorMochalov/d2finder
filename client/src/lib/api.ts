@@ -1,5 +1,16 @@
 const API_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? `https://${window.location.hostname}/api` : '/api');
 
+function apiBase() {
+  return API_URL.replace(/\/api$/, '');
+}
+
+export function resolveMediaUrl(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/uploads')) return `${apiBase()}${url}`;
+  return url;
+}
+
 interface RequestOptions {
   method?: string;
   body?: unknown;

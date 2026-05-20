@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useI18n } from '../lib/i18n';
 import { X, Check, ArrowRight, Shield, Search, Users, MessageCircle, Swords, UserPlus, Settings, Edit3, Send, MousePointerClick, Ghost, ClipboardList } from 'lucide-react';
 
-const PROGRESS_KEY = 'tour_progress_v2';
+const PROGRESS_KEY = 'tour_progress_v3';
 
 interface StepDef {
   icon: typeof Shield;
@@ -15,6 +15,7 @@ interface StepDef {
   minInput?: number;
   side?: 'top' | 'bottom' | 'left' | 'right';
   waitForTarget?: string;
+  modalTarget?: string;
 }
 
 interface GroupDef {
@@ -47,11 +48,11 @@ const groups: GroupDef[] = [
   {
     page: '/teams',
     steps: [
-      { icon: Users, target: '[data-tour="create-team"]', side: 'right', titleKey: 'tour.step_create_btn', descKey: 'tour.step_create_btn_desc', hintKey: 'tour.step_create_btn_hint', trigger: 'click', waitForTarget: '[data-tour="team-modal"]' },
-      { icon: Edit3, target: '[data-tour="team-name-input"]', side: 'bottom', titleKey: 'tour.step_team_name', descKey: 'tour.step_team_name_desc', hintKey: 'tour.step_team_name_hint', trigger: 'input', minInput: 2, waitForTarget: '[data-tour="team-name-input"]' },
-      { icon: Edit3, target: '[data-tour="team-tag-input"]', side: 'bottom', titleKey: 'tour.step_team_tag', descKey: 'tour.step_team_tag_desc', hintKey: 'tour.step_team_tag_hint', trigger: 'input', minInput: 2, waitForTarget: '[data-tour="team-tag-input"]' },
-      { icon: Send, target: '[data-tour="team-submit-btn"]', side: 'right', titleKey: 'tour.step_team_submit', descKey: 'tour.step_team_submit_desc', hintKey: 'tour.step_team_submit_hint', trigger: 'click' },
-      { icon: Users, target: '[data-tour="team-card-mine"]', titleKey: 'tour.step_team_click', descKey: 'tour.step_team_click_desc', hintKey: 'tour.step_team_click_hint', trigger: 'click' },
+      { icon: Users, target: '[data-tour="create-team"]', side: 'bottom', titleKey: 'tour.step_create_btn', descKey: 'tour.step_create_btn_desc', hintKey: 'tour.step_create_btn_hint', trigger: 'click', modalTarget: '[data-tour="team-modal"]' },
+      { icon: Edit3, target: '[data-tour="team-name-input"]', side: 'bottom', titleKey: 'tour.step_team_name', descKey: 'tour.step_team_name_desc', hintKey: 'tour.step_team_name_hint', trigger: 'input', minInput: 2, waitForTarget: '[data-tour="team-name-input"]', modalTarget: '[data-tour="team-modal"]' },
+      { icon: Edit3, target: '[data-tour="team-tag-input"]', side: 'bottom', titleKey: 'tour.step_team_tag', descKey: 'tour.step_team_tag_desc', hintKey: 'tour.step_team_tag_hint', trigger: 'input', minInput: 2, waitForTarget: '[data-tour="team-tag-input"]', modalTarget: '[data-tour="team-modal"]' },
+      { icon: Send, target: '[data-tour="team-submit-btn"]', side: 'bottom', titleKey: 'tour.step_team_submit', descKey: 'tour.step_team_submit_desc', hintKey: 'tour.step_team_submit_hint', trigger: 'click', modalTarget: '[data-tour="team-modal"]' },
+      { icon: Users, target: '[data-tour="team-card-mine"]', side: 'bottom', titleKey: 'tour.step_team_click', descKey: 'tour.step_team_click_desc', hintKey: 'tour.step_team_click_hint', trigger: 'click' },
     ],
   },
   {
@@ -66,7 +67,7 @@ const groups: GroupDef[] = [
     page: '/chat',
     steps: [
       { icon: MessageCircle, target: '[data-tour="chat-sidebar"]', side: 'right', titleKey: 'tour.step_chat_sidebar', descKey: 'tour.step_chat_sidebar_desc', hintKey: 'tour.step_chat_sidebar_hint', trigger: 'click' },
-      { icon: MessageCircle, target: '[data-tour="chat-input"]', side: 'bottom', titleKey: 'tour.step_chat_message', descKey: 'tour.step_chat_message_desc', hintKey: 'tour.step_chat_message_hint', trigger: 'enter' },
+      { icon: MessageCircle, target: '[data-tour="chat-input"]', side: 'top', titleKey: 'tour.step_chat_message', descKey: 'tour.step_chat_message_desc', hintKey: 'tour.step_chat_message_hint', trigger: 'enter' },
       { icon: MessageCircle, titleKey: 'tour.step_chat_done', descKey: 'tour.step_chat_done_desc', trigger: 'next' },
     ],
   },
@@ -108,7 +109,7 @@ function getGroupIds(): string[] {
 }
 
 export default function Tour() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -130,14 +131,11 @@ export default function Tour() {
   const [done, setDone] = useState(false);
 
   const step = pendingIdx >= 0 && group ? groupSteps[pendingIdx] : null;
-  const s = step;
-  const g = group;
   const hasTarget = step && !!step.target;
   const ready = !hasTarget || !!er;
 
   const isNextTrigger = step?.trigger === 'next';
 
-  // Check if chat has contacts
   const hasChats = pageGroup === '/chat' &&
     document.querySelectorAll('[data-tour="chat-sidebar"] button[title]').length > 0;
 
@@ -149,6 +147,14 @@ export default function Tour() {
     setAllProgress(p);
   }
 
+  function skipFrom(gid: string, fromIdx: number) {
+    const p = loadAllProgress();
+    getGroupIds().forEach((gid2) => { if (!p[gid2]) p[gid2] = groups.find((g) => g.page === gid2)!.steps.map(() => false); });
+    if (p[gid]) for (let i = fromIdx; i < p[gid].length; i++) p[gid][i] = true;
+    saveAllProgress(p);
+    setAllProgress(p);
+  }
+
   const advance = useCallback(() => {
     if (!group) return;
     const idx = pendingIdx;
@@ -156,6 +162,13 @@ export default function Tour() {
     setDone(false);
     setEr(null);
   }, [group, pendingIdx]);
+
+  function closeGroup() {
+    if (!group) return;
+    skipFrom(group.page, pendingIdx);
+    setDone(false);
+    setEr(null);
+  }
 
   function skipStep() {
     if (!group) return;
@@ -179,44 +192,59 @@ export default function Tour() {
     if (!step || !step.target) return;
     const to = setTimeout(() => measure(), 300);
     return () => clearTimeout(to);
-  }, [step?.target, step?.titleKey]);
+  }, [step?.target, step?.titleKey, measure]);
 
   useEffect(() => {
     if (!step?.waitForTarget) return;
     const interval = setInterval(() => {
-      if (document.querySelector(step.waitForTarget!)) {
+      const el = document.querySelector(step.waitForTarget!);
+      if (el) {
         clearInterval(interval);
         setTimeout(() => measure(), 200);
       }
     }, 200);
     return () => clearInterval(interval);
-  }, [step?.waitForTarget, step?.target]);
+  }, [step?.waitForTarget, step?.target, measure]);
 
   useEffect(() => {
-    if (!s?.target) return;
+    if (!step?.target) return;
     window.addEventListener('scroll', measure, { passive: true });
     window.addEventListener('resize', measure, { passive: true });
     return () => { window.removeEventListener('scroll', measure); window.removeEventListener('resize', measure); };
-  }, [measure, !!s?.target]);
+  }, [measure, !!step?.target]);
+
+  // Auto-skip modal-dependent steps when modal closes
+  useEffect(() => {
+    if (!step?.modalTarget || !step.target) return;
+    if (step.trigger === 'click' && done) return;
+    const interval = setInterval(() => {
+      const modal = document.querySelector(step.modalTarget!);
+      if (!modal) {
+        clearInterval(interval);
+        if (group) skipFrom(group.page, pendingIdx);
+      }
+    }, 300);
+    return () => clearInterval(interval);
+  }, [step?.modalTarget, step?.target, step?.trigger, done, pendingIdx, group]);
 
   useEffect(() => {
     if (!step || !step.trigger || done) return;
     if (step.trigger === 'next') return;
-    const s = step;
+    const st = step!;
     const idx = pendingIdx;
 
     function onClick(e: MouseEvent) {
-      if (s.trigger !== 'click') return;
-      const el = s.target ? document.querySelector(s.target) : null;
+      if (st.trigger !== 'click') return;
+      const el = st.target ? document.querySelector(st.target) : null;
       if (!el || !el.contains(e.target as Node)) return;
       setDone(true);
       setTimeout(() => { advance(); }, 500);
     }
 
     function onKeyDown(e: KeyboardEvent) {
-      if (s.trigger !== 'enter') return;
+      if (st.trigger !== 'enter') return;
       if (e.key !== 'Enter') return;
-      const el = s.target ? document.querySelector(s.target) as HTMLInputElement | null : null;
+      const el = st.target ? document.querySelector(st.target) as HTMLInputElement | null : null;
       if (!el || !el.contains(e.target as Node)) return;
       if (!el.value.trim()) return;
       setDone(true);
@@ -224,10 +252,10 @@ export default function Tour() {
     }
 
     function onInput(e: Event) {
-      if (s.trigger !== 'input') return;
+      if (st.trigger !== 'input') return;
       const el = e.target as HTMLInputElement;
-      if (!el.matches(s.target || '')) return;
-      const min = s.minInput || 1;
+      if (!el.matches(st.target || '')) return;
+      const min = st.minInput || 1;
       if (el.value.trim().length < min) return;
       setDone(true);
       setTimeout(() => { advance(); }, 500);
@@ -241,11 +269,10 @@ export default function Tour() {
       document.removeEventListener('keydown', onKeyDown, { capture: true });
       document.removeEventListener('input', onInput, { capture: true });
     };
-  }, [step?.target, step?.trigger, step?.minInput, done, pendingIdx, advance]);
+  }, [step, done, pendingIdx, advance]);
 
   if (allDone || !step || !group) return null;
 
-  // Chat - no contacts alternative
   const chatNoContacts = pageGroup === '/chat' && pendingIdx === 0 && !hasChats;
 
   const totalDone = groupProgress.filter(Boolean).length;
@@ -258,7 +285,20 @@ export default function Tour() {
   let cardTop: number | null = null;
 
   if (er && step?.side) {
-    switch (step.side) {
+    const s = step.side;
+    const spaceTop = er.top;
+    const spaceBottom = window.innerHeight - er.bottom;
+    const spaceLeft = er.left;
+    const spaceRight = window.innerWidth - er.right;
+    let actualSide = s;
+
+    // Auto-adjust if not enough space
+    if (s === 'right' && spaceRight < CARD_W + GAP + 20 && spaceLeft >= spaceRight) actualSide = 'left';
+    else if (s === 'left' && spaceLeft < CARD_W + GAP + 20 && spaceRight >= spaceLeft) actualSide = 'right';
+    else if (s === 'bottom' && spaceBottom < CARD_H + GAP + 20 && spaceTop >= spaceBottom) actualSide = 'top';
+    else if (s === 'top' && spaceTop < CARD_H + GAP + 20 && spaceBottom >= spaceTop) actualSide = 'bottom';
+
+    switch (actualSide) {
       case 'bottom':
         cardLeft = er.left + er.width / 2 - CARD_W / 2;
         cardTop = er.bottom + GAP;
@@ -284,11 +324,44 @@ export default function Tour() {
 
   const positioned = cardLeft !== null;
 
-  if (!step || !group) return null;
+  return (
+    <>
+      <div className="fixed inset-0 z-[9998]" style={{ pointerEvents: 'none' }}>
+        {er && step.target && (
+          <div
+            className="absolute rounded-xl"
+            style={{
+              left: er.left - 10, top: er.top - 10,
+              width: er.width + 20, height: er.height + 20,
+              borderRadius: 14,
+              boxShadow: '0 0 0 9999px rgba(0,0,0,0.7), 0 0 0 2px rgba(99,102,241,0.5), 0 0 20px rgba(99,102,241,0.3)',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+      </div>
+
+      {positioned ? (
+        <div className="fixed z-[9999]"
+          style={{ left: cardLeft!, top: cardTop!, width: CARD_W, pointerEvents: 'auto', transition: 'left 0.3s ease, top 0.3s ease' }}>
+          <div className="glass-strong rounded-2xl p-5 border border-white/5 shadow-2xl animate-slide-up">
+            {renderCardContent()}
+          </div>
+        </div>
+      ) : (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none p-4">
+          <div className="w-full max-w-sm pointer-events-auto animate-slide-up">
+            <div className="glass-strong rounded-2xl p-6 border border-white/5 shadow-2xl">
+              {renderCardContent()}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 
   function renderCardContent() {
-    if (!step || !group) return null;
-    const st = step;
+    const st = step!;
     return (
       <>
         <div className="flex items-start gap-3 mb-3">
@@ -301,7 +374,7 @@ export default function Tour() {
             </p>
             <p className="text-text font-bold text-sm leading-tight">{t(st.titleKey)}</p>
           </div>
-          <button onClick={advance} className="text-white/30 hover:text-white p-0.5 -mt-1 -mr-1 shrink-0"><X size={16} /></button>
+          <button onClick={closeGroup} className="text-white/30 hover:text-white p-0.5 -mt-1 -mr-1 shrink-0"><X size={16} /></button>
         </div>
         <p className="text-text/70 text-xs leading-relaxed mb-3 whitespace-pre-line">
           {done
@@ -350,40 +423,4 @@ export default function Tour() {
       </>
     );
   }
-
-  return (
-    <>
-      <div className="fixed inset-0 z-[9998]" style={{ pointerEvents: 'none' }}>
-        {er && step.target && (
-          <div
-            className="absolute rounded-xl"
-            style={{
-              left: er.left - 10, top: er.top - 10,
-              width: er.width + 20, height: er.height + 20,
-              borderRadius: 14,
-              boxShadow: '0 0 0 9999px rgba(0,0,0,0.7), 0 0 0 2px rgba(99,102,241,0.5), 0 0 20px rgba(99,102,241,0.3)',
-              pointerEvents: 'none',
-            }}
-          />
-        )}
-      </div>
-
-      {positioned ? (
-        <div className="fixed z-[9999]"
-          style={{ left: cardLeft!, top: cardTop!, width: CARD_W, pointerEvents: 'auto', transition: 'left 0.3s ease, top 0.3s ease' }}>
-          <div className="glass-strong rounded-2xl p-5 border border-white/5 shadow-2xl animate-slide-up">
-            {renderCardContent()}
-          </div>
-        </div>
-      ) : (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none p-4">
-          <div className="w-full max-w-sm pointer-events-auto animate-slide-up">
-            <div className="glass-strong rounded-2xl p-6 border border-white/5 shadow-2xl">
-              {renderCardContent()}
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
 }

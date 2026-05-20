@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
+import { resolveMediaUrl } from '../lib/api';
 import { User, Shield, Bell, LogOut } from 'lucide-react';
 
 export default function UserMenu() {
@@ -23,7 +24,7 @@ export default function UserMenu() {
   return (
     <div ref={ref} className="relative">
       <button onClick={() => setOpen(!open)} className="avatar w-9 h-9 text-sm hover:ring-2 ring-accent/50 transition cursor-pointer overflow-hidden">
-        {user.avatarUrl ? <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" /> : user.username[0].toUpperCase()}
+        {user.avatarUrl ? <img src={resolveMediaUrl(user.avatarUrl)} alt="" className="w-full h-full object-cover" /> : user.username[0].toUpperCase()}
       </button>
 
       {open && (
