@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, useNavigation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './lib/auth';
 import { useSocket } from './lib/socket';
@@ -32,12 +32,6 @@ function ScrollToTop() {
   return null;
 }
 
-function NavigationLoader() {
-  const navigation = useNavigation();
-  if (navigation.state !== 'loading') return null;
-  return <div className="fixed top-0 left-0 right-0 h-0.5 bg-accent z-50 animate-pulse" />;
-}
-
 function AppContent() {
   useSocket();
   const { user } = useAuth();
@@ -55,7 +49,6 @@ function AppContent() {
         <meta name="twitter:title" content={SITE_NAME} />
         <meta name="twitter:description" content={SITE_DESC} />
       </Helmet>
-      <NavigationLoader />
       {user && <Tour />}
       <AppBackground />
       <div className="app-shell">
