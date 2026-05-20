@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
+import { useUnread } from '../lib/unread';
 import { Search, Users, Ghost, MessageCircle, Swords, Languages } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 import UserMenu from './UserMenu';
@@ -16,6 +17,7 @@ const LINKS = [
 export default function NavBar() {
   const { user } = useAuth();
   const { t, lang, setLang } = useI18n();
+  const { total } = useUnread();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
@@ -33,10 +35,13 @@ export default function NavBar() {
         <div className="hidden md:flex items-center gap-1">
           {LINKS.map((l) => (
             <Link key={l.to} to={l.to}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm transition ${
+              className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm transition ${
                 isActive(l.to) ? 'text-text bg-surface-hover' : 'text-muted hover:text-text hover:bg-surface-hover'
               }`}>
               <l.icon size={15} /> {t(l.label)}
+              {l.to === '/chat' && total > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-glow">{total > 9 ? '9+' : total}</span>
+              )}
             </Link>
           ))}
         </div>

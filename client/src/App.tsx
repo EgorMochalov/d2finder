@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './lib/auth';
 import { useSocket } from './lib/socket';
 import { I18nProvider } from './lib/i18n';
 import { ToastProvider } from './components/Toast';
+import { UnreadProvider } from './lib/unread';
 import { useEffect } from 'react';
 import NavBar from './components/NavBar';
 import BackButton from './components/BackButton';
@@ -93,7 +94,9 @@ export default function App() {
       <HelmetProvider>
         <I18nProvider>
           <ToastProvider>
-            <AppContent />
+            <UnreadProvider>
+              <AppContent />
+            </UnreadProvider>
           </ToastProvider>
         </I18nProvider>
       </HelmetProvider>

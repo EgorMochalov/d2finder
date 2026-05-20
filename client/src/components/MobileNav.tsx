@@ -1,5 +1,6 @@
 import { useLocation, Link } from 'react-router-dom';
 import { useI18n } from '../lib/i18n';
+import { useUnread } from '../lib/unread';
 import { Search, Users, MessageCircle, Swords, Home } from 'lucide-react';
 
 const links = [
@@ -13,22 +14,27 @@ const links = [
 export default function MobileNav() {
   const { pathname } = useLocation();
   const { t } = useI18n();
+  const { total } = useUnread();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 glass-strong border-t border-white/5 safe-area-bottom">
       <div className="flex items-center justify-around py-2">
         {links.map(({ to, labelKey, icon: Icon }) => {
           const isActive = to === '/' ? pathname === '/' : pathname.startsWith(to);
+          const isChat = to === '/chat';
           return (
             <Link
               key={to}
               to={to}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition ${
+              className={`relative flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition ${
                 isActive ? 'text-accent' : 'text-muted hover:text-text'
               }`}
             >
               <Icon size={20} />
               <span className="text-[10px] font-medium">{t(labelKey)}</span>
+              {isChat && total > 0 && (
+                <span className="absolute -top-0.5 right-1.5 w-4.5 h-4.5 rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center shadow-glow" style={{ fontSize: '9px', lineHeight: 1 }}>{total > 9 ? '9+' : total}</span>
+              )}
             </Link>
           );
         })}

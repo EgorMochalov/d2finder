@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useToast } from '../components/Toast';
 import { getSocket } from '../lib/socket';
+import { useUnread } from '../lib/unread';
 import { MessageCircle, Send, Info, X, Ban, Unlock, ChevronRight, Menu } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import Modal from '../components/Modal';
@@ -14,6 +15,7 @@ export default function ChatPage() {
   const { user } = useAuth();
   const { t } = useI18n();
   const { toast } = useToast();
+  const { unread, markRead, setActiveChatId } = useUnread();
   const [searchParams, setSearchParams] = useSearchParams();
   const [contacts, setContacts] = useState<any[]>([]);
   const [teamChats, setTeamChats] = useState<any[]>([]);
@@ -32,6 +34,7 @@ export default function ChatPage() {
     if (!user) return;
     loadContacts(); loadBlocked();
     loaded.current = true;
+    return () => setActiveChatId(null);
   }, [user]);
 
   useEffect(() => {
@@ -70,6 +73,8 @@ export default function ChatPage() {
       setActiveChat({ id: data.chatId, type: 'PRIVATE', name });
       setMessages(data.messages); setShowList(false); setShowInfo(false);
       setChatInfo({ type: 'PRIVATE', otherUserId: data.otherUserId, username: name });
+      markRead(data.otherUserId);
+      setActiveChatId(data.chatId);
       setContacts((prev) => {
         if (prev.some((c) => c.userId === uid)) return prev;
         const last = data.messages?.[data.messages.length - 1];
@@ -84,6 +89,8 @@ export default function ChatPage() {
     if (activeChat) socket?.emit('leave:chat', activeChat.id);
     socket?.emit('join:chat', cid);
     setActiveChat({ id: cid, type: 'TEAM', name: tname });
+    markRead(cid);
+    setActiveChatId(cid);
     const [team, chat] = await Promise.all([api.teams.get(tid), api.chats.team(tid).catch(() => ({ messages: [] }))]);
     setChatInfo({ type: 'TEAM', team }); setMessages(chat.messages); setShowList(false); setShowInfo(false);
   }
@@ -128,18 +135,20 @@ export default function ChatPage() {
             <div className="flex-1 overflow-y-auto">
               {teamChats.length > 0 && <div className="px-3 pt-3 pb-1"><p className="text-muted text-[10px] uppercase tracking-wider font-semibold px-2">{t('chat.team')}</p></div>}
               {teamChats.map((chat: any) => (
-                  <button key={chat.id} onClick={() => openTeamChat(chat.id, chat.name)} className={`w-full flex items-center gap-3 px-4 py-3 transition glass-hover ${activeChat?.id === `team:${chat.id}` ? 'bg-surface-hover border-l-2 border-accent' : ''}`}>
+                  <button key={chat.id} onClick={() => openTeamChat(chat.id, chat.name)} className={`w-full flex items-center gap-3 px-4 py-3 transition glass-hover relative ${activeChat?.id === `team:${chat.id}` ? 'bg-surface-hover before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:rounded-full before:bg-accent' : ''}`}>
                   <AvatarImg src={chat.logoUrl} alt={chat.tag} className="w-9 h-9 text-xs font-bold shrink-0" square />
                   <div className="min-w-0 flex-1 text-left"><p className="text-text text-sm font-medium truncate">{chat.name}</p><p className="text-muted text-xs">{chat._count?.members || chat.members?.length || 0} {t('common.members')}</p></div>
                   <ChevronRight size={14} className="text-muted shrink-0" />
+                  {unread[`team:${chat.id}`] > 0 && <span className="w-5 h-5 rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center shrink-0">{unread[`team:${chat.id}`]}</span>}
                 </button>
               ))}
               {contacts.length > 0 && <div className="px-3 pt-4 pb-1"><p className="text-muted text-[10px] uppercase tracking-wider font-semibold px-2">{t('chat.direct')}</p></div>}
               {contacts.map((c: any) => (
-                <button key={c.userId} onClick={() => openPrivateChat(c.userId)} className={`w-full flex items-center gap-3 px-4 py-3 transition glass-hover ${activeChat?.name === c.username ? 'bg-surface-hover border-l-2 border-accent' : ''}`}>
+                <button key={c.userId} onClick={() => openPrivateChat(c.userId)} className={`w-full flex items-center gap-3 px-4 py-3 transition glass-hover relative ${activeChat?.name === c.username ? 'bg-surface-hover before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:rounded-full before:bg-accent' : ''}`}>
                   <AvatarImg src={c.avatarUrl} alt={c.username || ''} className="w-9 h-9 text-sm shrink-0" />
                   <div className="min-w-0 flex-1 text-left"><p className="text-text text-sm font-medium truncate">{c.username}</p><p className="text-muted text-xs truncate">{c.lastMessage}</p></div>
                   <ChevronRight size={14} className="text-muted shrink-0" />
+                  {unread[c.userId] > 0 && <span className="w-5 h-5 rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center shrink-0">{unread[c.userId]}</span>}
                 </button>
               ))}
               {teamChats.length === 0 && contacts.length === 0 && <div className="text-center py-12 text-muted text-sm px-4">{t('chat.no_contacts')}</div>}
@@ -153,13 +162,13 @@ export default function ChatPage() {
                 <Menu size={16} />
               </button>
               {teamChats.map((chat: any) => (
-                <button key={chat.id} onClick={() => openTeamChat(chat.id, chat.name)} className={`mb-1.5 shrink-0 ${activeChat?.id === `team:${chat.id}` ? 'ring-2 ring-accent' : ''}`}
-                  title={chat.name}><AvatarImg src={chat.logoUrl} alt={chat.name} className="w-9 h-9 text-[10px] font-bold" square /></button>
+                <button key={chat.id} onClick={() => openTeamChat(chat.id, chat.name)} className={`relative mb-1.5 shrink-0 ${activeChat?.id === `team:${chat.id}` ? 'ring-2 ring-accent' : ''}`}
+                  title={chat.name}><AvatarImg src={chat.logoUrl} alt={chat.name} className="w-9 h-9 text-[10px] font-bold" square />{unread[`team:${chat.id}`] > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-glow">{unread[`team:${chat.id}`]}</span>}</button>
               ))}
               {teamChats.length > 0 && contacts.length > 0 && <div className="w-6 h-px bg-white/10 my-1 shrink-0" />}
               {contacts.map((c: any) => (
-                <button key={c.userId} onClick={() => openPrivateChat(c.userId)} className={`mb-1.5 shrink-0 ${activeChat?.name === c.username ? 'ring-2 ring-accent' : ''}`}
-                  title={c.username}><AvatarImg src={c.avatarUrl} alt={c.username || ''} className="w-9 h-9 text-[10px]" /></button>
+                <button key={c.userId} onClick={() => openPrivateChat(c.userId)} className={`relative mb-1.5 shrink-0 ${activeChat?.name === c.username ? 'ring-2 ring-accent' : ''}`}
+                  title={c.username}><AvatarImg src={c.avatarUrl} alt={c.username || ''} className="w-9 h-9 text-[10px]" />{unread[c.userId] > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold flex items-center justify-center shadow-glow">{unread[c.userId]}</span>}</button>
               ))}
             </div>
           )}
