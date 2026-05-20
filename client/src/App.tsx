@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation, useNavigation } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './lib/auth';
 import { useSocket } from './lib/socket';
@@ -11,24 +11,31 @@ import AppBackground from './components/AppBackground';
 import BackButton from './components/BackButton';
 import MobileNav from './components/MobileNav';
 import Tour from './components/Tour';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ProfilePage from './pages/ProfilePage';
-import SearchPage from './pages/SearchPage';
-import TeamsPage from './pages/TeamsPage';
-import TeamDetailPage from './pages/TeamDetailPage';
-import ChatPage from './pages/ChatPage';
-import DraftSimulator from './pages/DraftSimulator';
-import ClanWarsPage from './pages/ClanWarsPage';
-import MyRequestsPage from './pages/MyRequestsPage';
-import NotificationsPage from './pages/NotificationsPage';
 import { SITE_NAME, SITE_DESC } from './lib/meta';
+
+const HomePage = lazy(() => import('./pages/HomePage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const SearchPage = lazy(() => import('./pages/SearchPage'));
+const TeamsPage = lazy(() => import('./pages/TeamsPage'));
+const TeamDetailPage = lazy(() => import('./pages/TeamDetailPage'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const DraftSimulator = lazy(() => import('./pages/DraftSimulator'));
+const ClanWarsPage = lazy(() => import('./pages/ClanWarsPage'));
+const MyRequestsPage = lazy(() => import('./pages/MyRequestsPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
+}
+
+function NavigationLoader() {
+  const navigation = useNavigation();
+  if (navigation.state !== 'loading') return null;
+  return <div className="fixed top-0 left-0 right-0 h-0.5 bg-accent z-50 animate-pulse" />;
 }
 
 function AppContent() {
@@ -48,6 +55,7 @@ function AppContent() {
         <meta name="twitter:title" content={SITE_NAME} />
         <meta name="twitter:description" content={SITE_DESC} />
       </Helmet>
+      <NavigationLoader />
       {user && <Tour />}
       <AppBackground />
       <div className="app-shell">
@@ -56,21 +64,23 @@ function AppContent() {
           <div className="max-w-7xl mx-auto px-4 pt-4">
             <BackButton />
           </div>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/:id" element={<ProfilePage />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/teams" element={<TeamsPage />} />
-            <Route path="/teams/:id" element={<TeamDetailPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/draft" element={<DraftSimulator />} />
-            <Route path="/clanwars" element={<ClanWarsPage />} />
-            <Route path="/my-teams" element={<MyRequestsPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-          </Routes>
+          <Suspense fallback={null}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/:id" element={<ProfilePage />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/teams" element={<TeamsPage />} />
+              <Route path="/teams/:id" element={<TeamDetailPage />} />
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/draft" element={<DraftSimulator />} />
+              <Route path="/clanwars" element={<ClanWarsPage />} />
+              <Route path="/my-teams" element={<MyRequestsPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+            </Routes>
+          </Suspense>
         </main>
         <MobileNav />
       </div>
