@@ -82,8 +82,8 @@ export default function ChatPage() {
     if (activeChat) socket?.emit('leave:chat', activeChat.id);
     socket?.emit('join:chat', cid);
     setActiveChat({ id: cid, type: 'TEAM', name: tname });
-    const team = await api.teams.get(tid);
-    setChatInfo({ type: 'TEAM', team }); setMessages([]); setShowList(false); setShowInfo(false);
+    const [team, chat] = await Promise.all([api.teams.get(tid), api.chats.team(tid)]);
+    setChatInfo({ type: 'TEAM', team }); setMessages(chat.messages); setShowList(false); setShowInfo(false);
   }
 
   function handleSend(e: React.FormEvent) {
@@ -194,7 +194,7 @@ export default function ChatPage() {
           {/* Info panel - overlay on top of chat */}
           {showInfo && chatInfo && <>
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden" onClick={() => setShowInfo(false)} />
-            <div className="absolute right-0 top-0 bottom-0 z-20 w-full md:w-72 border-l border-white/5 bg-surface md:bg-surface/95 overflow-y-auto p-5">
+            <div className="absolute right-0 top-0 bottom-0 z-20 w-full md:w-72 border-l border-white/5 glass-strong overflow-y-auto p-5">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-text font-semibold flex items-center gap-2 text-sm"><Info size={15} /> {t('chat.info')}</h3>
                 <button onClick={() => setShowInfo(false)} className="w-7 h-7 rounded-full glass-strong flex items-center justify-center text-muted hover:text-text transition shrink-0"><X size={14} /></button>

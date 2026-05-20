@@ -110,6 +110,7 @@ export const api = {
   chats: {
     contacts: () => request<any[]>('/chats/contacts'),
     private: (userId: string) => request<{ chatId: string; messages: any[]; otherUserId: string }>(`/chats/private/${userId}`),
+    team: (teamId: string) => request<{ chatId: string; messages: any[] }>(`/chats/team/${teamId}`),
   },
   blocks: {
     list: () => request<any[]>('/blocks'),

@@ -4,6 +4,22 @@ import { authenticate } from "../middleware/auth";
 
 const router = Router();
 
+router.get("/team/:teamId", authenticate, async (req: Request, res: Response) => {
+  const teamId = String(req.params.teamId);
+  const chatId = `team:${teamId}`;
+
+  const messages = await prisma.message.findMany({
+    where: { chatType: "TEAM", chatId },
+    include: {
+      sender: { select: { id: true, username: true, avatarUrl: true } },
+    },
+    orderBy: { createdAt: "asc" },
+    take: 100,
+  });
+
+  res.json({ chatId, messages });
+});
+
 router.get("/private/:userId", authenticate, async (req: Request, res: Response) => {
   const meId = req.user!.userId;
   const otherId = String(req.params.userId);
