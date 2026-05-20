@@ -32,17 +32,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const onLogout = () => {
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+    };
+    window.addEventListener('auth:logout', onLogout);
+
     if (token) {
       api.users.me()
         .then(setUser)
-        .catch(() => {
-          localStorage.removeItem('token');
-          setToken(null);
-        })
+        .catch(onLogout)
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
+
+    return () => window.removeEventListener('auth:logout', onLogout);
   }, [token]);
 
   function login(newToken: string, newUser: User) {

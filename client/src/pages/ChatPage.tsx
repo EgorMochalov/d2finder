@@ -72,9 +72,9 @@ export default function ChatPage() {
       const name = info?.username || data.otherUserId;
       setActiveChat({ id: data.chatId, type: 'PRIVATE', name });
       setMessages(data.messages); setShowList(false); setShowInfo(false);
-      setChatInfo({ type: 'PRIVATE', otherUserId: data.otherUserId, username: name });
+      setChatInfo({ type: 'PRIVATE', otherUserId: data.otherUserId, username: name, avatarUrl: info?.avatarUrl });
       markRead(data.otherUserId);
-      setActiveChatId(data.chatId);
+      setActiveChatId(data.otherUserId);
       setContacts((prev) => {
         if (prev.some((c) => c.userId === uid)) return prev;
         const last = data.messages?.[data.messages.length - 1];

@@ -70,7 +70,11 @@ router.get("/contacts", authenticate, async (req: Request, res: Response) => {
         where: { id },
         select: { id: true, username: true, avatarUrl: true },
       });
-      return { ...contact, username: user?.username || contact.username };
+      return {
+        ...contact,
+        username: user?.username || contact.username,
+        avatarUrl: user?.avatarUrl ?? null,
+      };
     })
   );
 

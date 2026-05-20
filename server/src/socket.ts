@@ -2,19 +2,24 @@ import { Server as HttpServer } from "http";
 import { Server } from "socket.io";
 import prisma from "./lib/prisma";
 import { verifyToken } from "./lib/jwt";
+import { isOriginAllowed } from "./lib/cors";
 
 const onlineUsers = new Map<string, string>();
+
+function privateChatPeerId(chatId: string, userId: string): string {
+  const parts = chatId.split("_");
+  return parts.find((id) => id !== userId) || "";
+}
 
 export function setupSocket(httpServer: HttpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL || "http://localhost:5173",
+      origin: (origin, cb) => {
+        cb(null, isOriginAllowed(origin));
+      },
       methods: ["GET", "POST"],
+      credentials: true,
     },
-  });
-
-  io.engine.on("initial_headers", (headers: Record<string, string>) => {
-    headers["Access-Control-Allow-Origin"] = "*";
   });
 
   io.use((socket, next) => {
@@ -37,8 +42,6 @@ export function setupSocket(httpServer: HttpServer) {
     const userId = (socket as any).userId;
     const username = (socket as any).username;
 
-    console.log(`[WS] User connected: ${username} (${userId})`);
-
     onlineUsers.set(userId, username);
     io.emit("online:update", Array.from(onlineUsers.keys()));
 
@@ -53,12 +56,28 @@ export function setupSocket(httpServer: HttpServer) {
     });
 
     socket.on("message:send", async (data: { chatType: string; chatId: string; content: string }) => {
+      const content = data.content?.trim();
+      if (!content) return;
+
+      if (data.chatType === "PRIVATE") {
+        const otherId = privateChatPeerId(data.chatId, userId);
+        const blocked = await prisma.blockedUser.findFirst({
+          where: {
+            OR: [
+              { blockerId: userId, blockedId: otherId },
+              { blockerId: otherId, blockedId: userId },
+            ],
+          },
+        });
+        if (blocked) return;
+      }
+
       const message = await prisma.message.create({
         data: {
           chatType: data.chatType as any,
           chatId: data.chatId,
           senderId: userId,
-          content: data.content,
+          content,
         },
         include: {
           sender: { select: { id: true, username: true, avatarUrl: true } },
@@ -68,16 +87,17 @@ export function setupSocket(httpServer: HttpServer) {
       io.to(`chat:${data.chatId}`).emit("message:new", message);
 
       if (data.chatType === "PRIVATE") {
-        const otherUserId = data.chatId.replace(userId, "").replace("_", "");
-        io.to(`user:${otherUserId}`).emit("notification", {
-          type: "new_message",
-          title: `New message from ${username}`,
-        });
+        const otherUserId = privateChatPeerId(data.chatId, userId);
+        if (otherUserId) {
+          io.to(`user:${otherUserId}`).emit("notification", {
+            type: "new_message",
+            title: `New message from ${username}`,
+          });
+        }
       }
     });
 
     socket.on("disconnect", () => {
-      console.log(`[WS] User disconnected: ${username}`);
       onlineUsers.delete(userId);
       io.emit("online:update", Array.from(onlineUsers.keys()));
     });

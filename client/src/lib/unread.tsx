@@ -23,16 +23,16 @@ export function UnreadProvider({ children }: { children: ReactNode }) {
     if (!socket) return;
     const handler = (msg: any) => {
       if (msg.senderId === user.id) return;
-      if (msg.chatId === activeChatId) {
+      const key = msg.chatType === 'TEAM' ? msg.chatId : msg.senderId;
+      if (key === activeChatId) {
         setUnread((prev) => {
-          if (!prev[msg.chatId]) return prev;
+          if (!prev[key]) return prev;
           const next = { ...prev };
-          delete next[msg.chatId];
+          delete next[key];
           return next;
         });
         return;
       }
-      const key = msg.chatType === 'TEAM' ? msg.chatId : msg.senderId;
       setUnread((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
     };
     socket.on('message:new', handler);

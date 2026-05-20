@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './auth';
-
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
+import { SOCKET_URL } from './config';
 
 const socketRef = { current: null as Socket | null };
 const onlineUsersRef = { current: new Set<string>() };
@@ -19,15 +18,17 @@ export function useSocket() {
       return;
     }
 
+    if (!SOCKET_URL) {
+      console.error('[WS] VITE_SOCKET_URL не задан');
+      return;
+    }
+
     const socket = io(SOCKET_URL, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 10,
     });
-
-    socket.on('connect', () => console.log('[WS] Connected'));
-    socket.on('connect_error', (err) => console.error('[WS] Error:', err.message));
 
     socket.on('online:update', (userIds: string[]) => {
       onlineUsersRef.current = new Set(userIds);

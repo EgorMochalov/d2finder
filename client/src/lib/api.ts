@@ -1,10 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? `https://${window.location.hostname}/api` : '/api');
+import { API_URL, MEDIA_ORIGIN, assertApiConfigured } from './config';
 
-const MEDIA_ORIGIN = import.meta.env.VITE_MEDIA_URL || API_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
-
-function apiBase() {
-  return MEDIA_ORIGIN;
-}
+assertApiConfigured();
 
 export function resolveMediaUrl(url: string | null | undefined): string | undefined {
   if (!url) return undefined;
@@ -20,6 +16,10 @@ interface RequestOptions {
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  if (!API_URL) {
+    throw new Error('API не настроен: задайте VITE_API_URL в переменных окружения Vercel');
+  }
+
   const token = localStorage.getItem('token');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -34,6 +34,11 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
+
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    window.dispatchEvent(new Event('auth:logout'));
+  }
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ error: 'Request failed' }));
@@ -124,6 +129,7 @@ export const api = {
   },
   upload: {
     avatar: async (file: File) => {
+      if (!API_URL) throw new Error('API не настроен');
       const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('avatar', file);
@@ -136,6 +142,7 @@ export const api = {
       return res.json();
     },
     teamLogo: async (file: File, teamId: string) => {
+      if (!API_URL) throw new Error('API не настроен');
       const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('logo', file);
