@@ -12,7 +12,7 @@ import { Helmet } from 'react-helmet-async';
 import Modal from '../components/Modal';
 import { CardSkeleton } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
-import { ROLE_PREFS, roleLabelKey } from '../lib/positions';
+import { ROLE_PREFS, roleLabelEn } from '../lib/positions';
 import { filterManageableTeams } from '../lib/teamUtils';
 import { getRankTier } from '../lib/rankStyle';
 import {
@@ -103,7 +103,7 @@ export default function SearchPage() {
             <div className="space-y-5">
               <div><label className="field-label">{t('common.search')}</label><div className="relative"><input type="text" value={filters.query} onChange={(e) => handleFilterChange('query', e.target.value)} placeholder={t('placeholders.search_username')} className="glass-input w-full rounded-xl pl-8 pr-3 py-2 text-sm" /><SearchIcon size={14} className="absolute left-2.5 top-2.5 text-muted" /></div></div>
               <div><label className="text-muted text-xs block mb-1.5">{t('search.mmr')}</label><div className="flex gap-2"><input type="number" value={filters.rankMin} onChange={(e) => handleFilterChange('rankMin', e.target.value)} placeholder={t('search.from')} className="glass-input w-full rounded-xl px-3 py-2 text-sm" /><input type="number" value={filters.rankMax} onChange={(e) => handleFilterChange('rankMax', e.target.value)} placeholder={t('search.to')} className="glass-input w-full rounded-xl px-3 py-2 text-sm" /></div></div>
-              <div><label className="text-muted text-xs block mb-1.5">{t('search.position')}</label><div className="flex flex-wrap gap-1.5">{ROLE_PREFS.map((p) => <button key={p} onClick={() => apply('position', p)} className={`px-2.5 py-1 rounded-lg text-xs border transition ${filters.position === p ? 'bg-accent-dim border-accent/40 text-accent' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{t(roleLabelKey(p))}</button>)}</div></div>
+               <div><label className="text-muted text-xs block mb-1.5">{t('search.position')}</label><div className="flex flex-wrap gap-1.5">{ROLE_PREFS.map((p) => <button key={p} onClick={() => apply('position', p)} className={`px-2.5 py-1 rounded-lg text-xs border transition ${filters.position === p ? 'bg-accent-dim border-accent/40 text-accent' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{roleLabelEn(p)}</button>)}</div></div>
               <div><label className="text-muted text-xs block mb-1.5">{t('search.region')}</label><div className="flex flex-wrap gap-1.5">{REGIONS.map((r) => <button key={r} onClick={() => apply('region', r)} className={`px-2.5 py-1 rounded-lg text-xs border transition ${filters.region === r ? 'bg-blue-dim border-blue/40 text-blue' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{r}</button>)}</div></div>
               <div><label className="field-label">{t('search.language')}</label><select value={filters.language} onChange={(e) => handleFilterChange('language', e.target.value)} className="glass-select w-full rounded-xl px-3 py-2 text-sm"><option value="">{t('placeholders.any')}</option>{LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}</select></div>
               <div>
@@ -194,7 +194,7 @@ export default function SearchPage() {
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1 mt-1.5">
-                          {(p.rolePrefs as string[]).map((r: string) => <span key={r} className="chip">{t(roleLabelKey(r))}</span>)}
+                           {(p.rolePrefs as string[]).map((r: string) => <span key={r} className="chip">{roleLabelEn(r)}</span>)}
                           {pTags.map((tag) => (
                             <span key={tag} className="chip-playstyle">{t(playstyleTagKey(tag as PlaystyleTagId))}</span>
                           ))}

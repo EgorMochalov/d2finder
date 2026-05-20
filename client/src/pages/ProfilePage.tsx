@@ -9,7 +9,7 @@ import RankPicker from '../components/RankPicker';
 import Modal from '../components/Modal';
 import { UserPlus, MessageCircle, Shield, Camera, Save, Star, MapPin, Globe, Square, Play, AlertCircle, Sparkles } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
-import { ROLE_PREFS, roleLabelKey } from '../lib/positions';
+import { ROLE_PREFS, roleLabelEn } from '../lib/positions';
 import { filterManageableTeams } from '../lib/teamUtils';
 import {
   PLAYSTYLE_TAG_IDS,
@@ -153,7 +153,7 @@ export default function ProfilePage() {
             <div><label className="field-label">{t('profile.rank')}</label><RankPicker value={rank} onChange={setRank} /></div>
 
             <div><label className="field-label">{t('profile.roles')}</label>
-              <div className="flex flex-wrap gap-1.5">{ROLE_PREFS.map((p) => <button key={p} type="button" onClick={() => setRolePrefs(toggleChip(rolePrefs, p))} className={`px-3 py-1.5 rounded-lg text-xs border transition ${rolePrefs.includes(p) ? 'bg-accent-dim border-accent/30 text-accent' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{t(roleLabelKey(p))}</button>)}</div>
+              <div className="flex flex-wrap gap-1.5">{ROLE_PREFS.map((p) => <button key={p} type="button" onClick={() => setRolePrefs(toggleChip(rolePrefs, p))} className={`px-3 py-1.5 rounded-lg text-xs border transition ${rolePrefs.includes(p) ? 'bg-accent-dim border-accent/30 text-accent' : 'glass-input border-white/5 text-muted hover:text-text'}`}>{roleLabelEn(p)}</button>)}</div>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-5">
@@ -204,7 +204,7 @@ export default function ProfilePage() {
             </div>
             <div className="glass rounded-xl p-4">
               <p className="text-muted text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1.5 mb-2"><Shield size={12} /> {t('profile.roles')}</p>
-              {rolePrefs.length > 0 ? <div className="flex flex-wrap gap-1">{rolePrefs.map((r: string) => <span key={r} className="chip">{t(roleLabelKey(r))}</span>)}</div> : <p className="text-text text-sm">—</p>}
+              {rolePrefs.length > 0 ? <div className="flex flex-wrap gap-1">{rolePrefs.map((r: string) => <span key={r} className="chip">{roleLabelEn(r)}</span>)}</div> : <p className="text-text text-sm">—</p>}
             </div>
             <div className="glass rounded-xl p-4">
               <p className="text-muted text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1.5 mb-2"><MapPin size={12} /> {t('profile.region')}</p>

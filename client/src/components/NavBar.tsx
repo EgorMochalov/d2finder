@@ -23,7 +23,7 @@ export default function NavBar() {
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
-    <nav className="sticky top-0 z-40 glass border-b border-white/5 backdrop-blur-xl">
+    <nav className="sticky top-0 z-40 glass border-b border-white/5" style={{ isolation: 'isolate', willChange: 'transform' }}>
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 shrink-0 group">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent via-accent/90 to-gold/40 flex items-center justify-center shadow-glow transition group-hover:scale-105">
