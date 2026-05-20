@@ -24,7 +24,7 @@ export default function UserMenu() {
   return (
     <div ref={ref} className="relative">
       <button onClick={() => setOpen(!open)} className="avatar w-9 h-9 text-sm hover:ring-2 ring-accent/50 transition cursor-pointer overflow-hidden">
-        <AvatarImg src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" fallbackClassName="w-full h-full text-sm" />
+        <AvatarImg src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
       </button>
 
       {open && (

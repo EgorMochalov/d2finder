@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api, resolveMediaUrl } from '../lib/api';
+import { api } from '../lib/api';
 import AvatarImg from '../components/AvatarImg';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
