@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api, resolveMediaUrl } from '../lib/api';
+import AvatarImg from '../components/AvatarImg';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useToast } from '../components/Toast';
@@ -81,7 +82,7 @@ export default function TeamDetailPage() {
         <div className="bg-gradient-to-r from-accent/10 via-blue/10 to-transparent p-6 md:p-8">
           <div className="flex items-center gap-4">
             <div className="relative shrink-0">
-              <div className="avatar-square w-16 h-16 text-2xl">{team.logoUrl ? <img src={resolveMediaUrl(team.logoUrl)} alt="" className="w-full h-full object-cover" /> : team.tag}</div>
+              <AvatarImg src={team.logoUrl} alt={team.tag} className="w-16 h-16 text-2xl" square />
               {isCaptain && <>
                 <button onClick={() => document.getElementById('team-logo-input')?.click()} className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full glass-strong flex items-center justify-center text-muted hover:text-text transition shadow-lg" disabled={logoUploading}><Camera size={13} /></button>
                 <input id="team-logo-input" type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
@@ -110,7 +111,7 @@ export default function TeamDetailPage() {
             {team.members?.map((m: any) => (
               <div key={m.id} className="flex items-center justify-between p-3 rounded-xl bg-surface border border-white/5 glass-hover">
                 <div className="flex items-center gap-3">
-                  <Link to={`/profile/${m.userId}`} className="avatar w-10 h-10 text-sm hover:ring-2 ring-accent/50 transition overflow-hidden">{m.user?.avatarUrl ? <img src={resolveMediaUrl(m.user.avatarUrl)} alt="" className="w-full h-full object-cover" /> : (m.user?.username?.[0]?.toUpperCase() || '?')}</Link>
+                  <Link to={`/profile/${m.userId}`}><AvatarImg src={m.user?.avatarUrl} alt={m.user?.username || ''} className="w-10 h-10 text-sm hover:ring-2 ring-accent/50 transition" /></Link>
                   <div>
                     <Link to={`/profile/${m.userId}`} className="text-text font-medium text-sm hover:text-accent transition">{m.user?.username}</Link>
                     <p className="text-muted text-xs">{m.role === 'CAPTAIN' ? t('team_detail.role_captain') : m.role === 'VICE_CAPTAIN' ? t('team_detail.role_vice') : t('team_detail.role_member')}</p>
@@ -128,7 +129,7 @@ export default function TeamDetailPage() {
                 {team.joinRequests.filter((r: any) => r.status === 'PENDING').map((req: any) => (
                   <div key={req.id} className="flex items-center justify-between p-3 rounded-xl bg-surface border border-white/5">
                     <div className="flex items-center gap-3">
-                      <div className="avatar w-10 h-10 text-sm overflow-hidden">{req.user?.avatarUrl ? <img src={resolveMediaUrl(req.user.avatarUrl)} alt="" className="w-full h-full object-cover" /> : (req.user?.username?.[0]?.toUpperCase() || '?')}</div>
+                      <AvatarImg src={req.user?.avatarUrl} alt={req.user?.username || ''} className="w-10 h-10 text-sm" />
                       <div>
                         <Link to={`/profile/${req.userId}`} className="text-text font-medium text-sm hover:text-accent transition">{req.user?.username}</Link>
                         {req.message && <p className="text-muted text-xs mt-0.5">{req.message}</p>}

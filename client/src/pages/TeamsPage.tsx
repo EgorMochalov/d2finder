@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, resolveMediaUrl } from '../lib/api';
+import AvatarImg from '../components/AvatarImg';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useDebounce } from '../lib/useDebounce';
@@ -146,7 +147,7 @@ export default function TeamsPage() {
                   <div key={team.id} className="glass rounded-xl p-5 glass-hover flex flex-col stagger-enter" style={{ animationDelay: `${i * 0.05}s` }}>
                     <Link to={`/teams/${team.id}`} className="block flex-1" data-tour={team.id === lastCreatedTeamId ? 'team-card-mine' : undefined} onClick={() => setLastCreatedTeamId(null)}>
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="avatar-square w-12 h-12 text-lg">{team.logoUrl ? <img src={resolveMediaUrl(team.logoUrl)} alt="" className="w-full h-full object-cover" /> : team.tag}</div>
+                        <AvatarImg src={team.logoUrl} alt={team.tag} className="w-12 h-12 text-lg" square />
                         <div className="min-w-0 flex-1"><h3 className="text-text font-semibold truncate">{team.name}</h3><p className="text-muted text-xs">[{team.tag}] · {team._count?.members || team.members?.length || 0} {t('common.members')}</p></div>
                       </div>
                       {team.description && <p className="text-muted text-sm line-clamp-2 leading-relaxed">{team.description}</p>}

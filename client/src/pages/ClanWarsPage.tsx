@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api, resolveMediaUrl } from '../lib/api';
+import AvatarImg from '../components/AvatarImg';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useToast } from '../components/Toast';
@@ -146,7 +147,7 @@ export default function ClanWarsPage() {
             ) : posts.map((p: any) => (
               <div key={p.id} className="glass rounded-xl p-5 border border-accent/10 glass-hover">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="avatar-square w-10 h-10 text-sm">{p.team?.logoUrl ? <img src={resolveMediaUrl(p.team.logoUrl)} alt="" className="w-full h-full object-cover" /> : (p.team?.tag || '?')}</div>
+                  <AvatarImg src={p.team?.logoUrl} alt={p.team?.tag || ''} className="w-10 h-10 text-sm" square />
                   <div className="min-w-0 flex-1">
                     <p className="text-text font-semibold text-sm truncate">{p.team?.name}</p>
                     <p className="text-muted text-xs"><Users size={11} className="inline" /> {p.team?._count?.members || 0} {t('common.members')}</p>

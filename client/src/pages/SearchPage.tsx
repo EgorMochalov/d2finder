@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, resolveMediaUrl } from '../lib/api';
+import AvatarImg from '../components/AvatarImg';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useDebounce } from '../lib/useDebounce';
@@ -99,7 +100,7 @@ export default function SearchPage() {
                   <Link key={p.id} to={`/profile/${p.id}`} className="glass rounded-xl p-3 md:p-4 glass-hover block stagger-enter" style={{ animationDelay: `${i * 0.05}s` }}>
                     <div className="flex items-start gap-2.5 md:gap-3">
                       <div className="relative shrink-0">
-                        <div className="avatar w-10 h-10 md:w-11 md:h-11 text-base md:text-lg overflow-hidden">{p.avatarUrl ? <img src={resolveMediaUrl(p.avatarUrl)} alt="" className="w-full h-full object-cover" /> : p.username[0].toUpperCase()}</div>
+                        <AvatarImg src={p.avatarUrl} alt={p.username || ''} className="w-10 h-10 md:w-11 md:h-11 text-base md:text-lg" />
                         {onlineUsers.has(p.id) && <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green border-2 border-[#0d0d1a]" />}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -126,7 +127,7 @@ export default function SearchPage() {
 
       <Modal open={!!invTgt} onClose={() => { setInvTgt(null); setInvErr(''); }} title={`${t('search.invite')} ${invTgt?.username || ''}`}>
         <p className="text-muted text-sm mb-4">{t('teams.invite')}:</p>
-        <div className="space-y-2 mb-4">{myTeams.map((team: any) => <button key={team.id} onClick={() => handleInvite(team.id)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface border border-white/5 glass-hover text-left"><div className="avatar-square w-10 h-10 text-sm">{team.logoUrl ? <img src={resolveMediaUrl(team.logoUrl)} alt="" className="w-full h-full object-cover" /> : team.tag}</div><div><p className="text-text text-sm font-medium">{team.name}</p><p className="text-muted text-xs">[{team.tag}] · {team._count?.members || team.members?.length || 0} {t('common.members')}</p></div></button>)}</div>
+        <div className="space-y-2 mb-4">{myTeams.map((team: any) => <button key={team.id} onClick={() => handleInvite(team.id)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-surface border border-white/5 glass-hover text-left"><AvatarImg src={team.logoUrl} alt={team.tag} className="w-10 h-10 text-sm" square /><div><p className="text-text text-sm font-medium">{team.name}</p><p className="text-muted text-xs">[{team.tag}] · {team._count?.members || team.members?.length || 0} {t('common.members')}</p></div></button>)}</div>
         {invErr && <p className="text-accent text-xs flex items-center gap-1 mb-3"><AlertCircle size={12} /> {invErr}</p>}
         <button onClick={() => { setInvTgt(null); setInvErr(''); }} className="btn-ghost w-full py-2.5 rounded-xl text-sm">{t('common.cancel')}</button>
       </Modal>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api, resolveMediaUrl } from '../lib/api';
+import AvatarImg from '../components/AvatarImg';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useToast } from '../components/Toast';
@@ -77,7 +78,7 @@ export default function MyRequestsPage() {
             {invitations.map((inv: any) => (
               <div key={inv.id} className="glass rounded-xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="avatar-square w-10 h-10 text-sm shrink-0">{inv.team?.logoUrl ? <img src={resolveMediaUrl(inv.team.logoUrl)} alt="" className="w-full h-full object-cover" /> : (inv.team?.tag || '?')}</div>
+                  <AvatarImg src={inv.team?.logoUrl} alt={inv.team?.tag || ''} className="w-10 h-10 text-sm shrink-0" square />
                   <div className="min-w-0">
                     <p className="text-text font-medium text-sm truncate">{inv.team?.name}</p>
                     <p className="text-muted text-xs">[{inv.team?.tag}]</p>
@@ -103,7 +104,7 @@ export default function MyRequestsPage() {
             {sentInvitations.map((inv: any) => (
               <div key={inv.id} className="glass rounded-xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="avatar-square w-10 h-10 text-sm shrink-0">{inv.team?.logoUrl ? <img src={resolveMediaUrl(inv.team.logoUrl)} alt="" className="w-full h-full object-cover" /> : (inv.team?.tag || '?')}</div>
+                  <AvatarImg src={inv.team?.logoUrl} alt={inv.team?.tag || ''} className="w-10 h-10 text-sm shrink-0" square />
                   <div className="min-w-0">
                     <p className="text-text font-medium text-sm truncate">{inv.team?.name}</p>
                     <p className="text-muted text-xs">{t('my.to_player')}: {inv.user?.username} · <span className="chip chip-accent text-[10px]">{t('my.pending')}</span></p>
@@ -125,7 +126,8 @@ export default function MyRequestsPage() {
             {requests.map((req: any) => (
               <div key={req.id} className="glass rounded-xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="avatar-square w-10 h-10 text-sm shrink-0">{req.team?.logoUrl ? <img src={resolveMediaUrl(req.team.logoUrl)} alt="" className="w-full h-full object-cover" /> : (req.team?.tag || '?')}</div>
+                   <AvatarImg src={req.team?.logoUrl} alt={req.team?.tag || ''} className="w-10 h-10 text-sm shrink-0" square />
+
                   <div className="min-w-0">
                     <p className="text-text font-medium text-sm truncate">{req.team?.name}</p>
                     <p className="text-muted text-xs">[{req.team?.tag}] · <span className="chip chip-accent text-[10px]">{t('my.pending')}</span></p>
@@ -143,7 +145,7 @@ export default function MyRequestsPage() {
       <h2 className="text-text font-semibold text-sm flex items-center gap-2 mb-3"><Shield size={16} /> {t('my.my_teams')}</h2>
       <div className="glass rounded-2xl p-5">
         {teams.length === 0 ? <p className="text-muted text-sm">{t('my.none')}</p> : (
-          <div className="space-y-2">{teams.map((tm: any) => <Link key={tm.id} to={`/teams/${tm.id}`} className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-white/5 glass-hover"><div className="avatar-square w-10 h-10 text-sm shrink-0">{tm.logoUrl ? <img src={resolveMediaUrl(tm.logoUrl)} alt="" className="w-full h-full object-cover" /> : tm.tag}</div><div className="flex-1 min-w-0"><p className="text-text font-medium text-sm truncate">{tm.name}</p><p className="text-muted text-xs">{tm._count?.members || tm.members?.length || 0} {t('common.members')}</p></div><span className="chip chip-green text-xs shrink-0">{t('my.member')}</span><ChevronRight size={14} className="text-muted shrink-0" /></Link>)}</div>
+          <div className="space-y-2">{teams.map((tm: any) => <Link key={tm.id} to={`/teams/${tm.id}`} className="flex items-center gap-3 p-3 rounded-xl bg-surface border border-white/5 glass-hover"><AvatarImg src={tm.logoUrl} alt={tm.tag} className="w-10 h-10 text-sm shrink-0" square /><div className="flex-1 min-w-0"><p className="text-text font-medium text-sm truncate">{tm.name}</p><p className="text-muted text-xs">{tm._count?.members || tm.members?.length || 0} {t('common.members')}</p></div><span className="chip chip-green text-xs shrink-0">{t('my.member')}</span><ChevronRight size={14} className="text-muted shrink-0" /></Link>)}</div>
         )}
       </div>
 
