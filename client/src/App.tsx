@@ -26,6 +26,7 @@ const DraftSimulator = lazy(() => import('./pages/DraftSimulator'));
 const ClanWarsPage = lazy(() => import('./pages/ClanWarsPage'));
 const MyRequestsPage = lazy(() => import('./pages/MyRequestsPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const AdminReportsPage = lazy(() => import('./pages/AdminReportsPage'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -82,6 +83,7 @@ function AppContent() {
               <Route path="/clanwars" element={<ClanWarsPage />} />
               <Route path="/my-teams" element={<MyRequestsPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/admin/reports" element={<AdminReportsPage />} />
             </Routes>
           </Suspense>
         </main>

@@ -8,6 +8,7 @@ import { useToast } from '../components/Toast';
 import { Users, UserPlus, Send, Check, X, AlertCircle, LogOut, Trash2, Camera } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import Modal, { ConfirmModal } from '../components/Modal';
+import ReportButton from '../components/ReportButton';
 
 export default function TeamDetailPage() {
   const { id } = useParams();
@@ -108,6 +109,7 @@ export default function TeamDetailPage() {
               {!isMember && user && <button onClick={() => setShowJoin(true)} className="btn-secondary px-4 py-2 rounded-xl text-sm flex items-center gap-2"><UserPlus size={15} /> {t('team_detail.join')}</button>}
               {isCaptain && <button onClick={() => setShowInv(true)} className="btn-primary px-4 py-2 rounded-xl text-sm flex items-center gap-2"><UserPlus size={15} /> {t('team_detail.invite')}</button>}
               {isMember && !isCaptain && <button onClick={() => setShowLeave(true)} className="btn-ghost px-4 py-2 rounded-xl text-sm flex items-center gap-2 text-accent"><LogOut size={15} /> {t('team_detail.leave')}</button>}
+              {user && <ReportButton reportedTeamId={id} />}
               {isCaptain && <button onClick={() => setShowDisband(true)} className="btn-ghost px-4 py-2 rounded-xl text-sm flex items-center gap-2 text-accent"><Trash2 size={15} /> {t('team_detail.disband')}</button>}
             </div>
           </div>

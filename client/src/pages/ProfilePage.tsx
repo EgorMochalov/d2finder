@@ -3,9 +3,11 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
-import { useToast } from '../components/Toast';
+import { useOnlineUsers } from '../lib/socket';
 import AvatarImg from '../components/AvatarImg';
+import Modal from '../components/Modal';
 import RankPicker from '../components/RankPicker';
+import ReportButton from '../components/ReportButton';
 import Modal from '../components/Modal';
 import { UserPlus, MessageCircle, Shield, Camera, Save, Star, MapPin, Globe, Square, Play, AlertCircle, Sparkles } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
@@ -138,6 +140,7 @@ export default function ProfilePage() {
               {me && !isOwn ? <>
                 {myTeams.length > 0 && <button onClick={() => setShowInvite(true)} className="btn-ghost px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5"><UserPlus size={14} /> {t('profile.invite')}</button>}
                 <button onClick={() => navigate(`/chat?user=${userId}`)} className="btn-secondary px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5"><MessageCircle size={14} /> {t('profile.message')}</button>
+                <ReportButton reportedUserId={userId} />
               </> : null}
               {isOwn && <Link to="/my-teams" className="btn-ghost px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5"><Shield size={14} /> {t('profile.my_teams')}</Link>}
             </div>

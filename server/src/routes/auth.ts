@@ -17,6 +17,12 @@ const loginSchema = z.object({
   password: z.string(),
 });
 
+const ADMINS = (process.env.ADMIN_EMAILS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+
+function adminRole(email: string): string {
+  return ADMINS.includes(email.toLowerCase()) ? 'ADMIN' : 'USER';
+}
+
 router.post("/register", async (req: Request, res: Response) => {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -37,15 +43,16 @@ router.post("/register", async (req: Request, res: Response) => {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
+  const role: "USER" | "ADMIN" = ADMINS.includes(email.toLowerCase()) ? "ADMIN" : "USER";
   const user = await prisma.user.create({
-    data: { username, email, passwordHash },
+    data: { username, email, passwordHash, role: role },
   });
 
-  const token = signToken({ userId: user.id, username: user.username });
+  const token = signToken({ userId: user.id, username: user.username, role: user.role });
 
   res.status(201).json({
     token,
-    user: { id: user.id, username: user.username, email: user.email },
+    user: { id: user.id, username: user.username, email: user.email, role: user.role, avatarUrl: user.avatarUrl },
   });
 });
 
@@ -72,11 +79,11 @@ router.post("/login", async (req: Request, res: Response) => {
     return;
   }
 
-  const token = signToken({ userId: user.id, username: user.username });
+  const token = signToken({ userId: user.id, username: user.username, role: user.role });
 
   res.json({
     token,
-    user: { id: user.id, username: user.username, email: user.email },
+    user: { id: user.id, username: user.username, email: user.email, role: user.role, avatarUrl: user.avatarUrl },
   });
 });
 

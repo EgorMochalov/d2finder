@@ -371,6 +371,11 @@ const ru: Record<string, string> = {
   'placeholders.any': 'Любой',
   'placeholders.bio': 'Расскажи о себе...',
   'placeholders.team_desc': 'Описание команды...',
+  'report.title': 'Пожаловаться',
+  'report.reason': 'Причина',
+  'report.description': 'Описание (необязательно)',
+  'report.sent': 'Жалоба отправлена',
+  'report.submit': 'Отправить жалобу',
 };
 
 const translations: Record<Lang, Record<string, string>> = {
@@ -742,6 +747,11 @@ const translations: Record<Lang, Record<string, string>> = {
     'placeholders.any': 'Any',
     'placeholders.bio': 'Tell about yourself...',
     'placeholders.team_desc': 'Team description...',
+    'report.title': 'Report',
+    'report.reason': 'Reason',
+    'report.description': 'Description (optional)',
+    'report.sent': 'Report sent',
+    'report.submit': 'Send report',
   },
 };
 

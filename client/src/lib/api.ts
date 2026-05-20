@@ -156,4 +156,11 @@ export const api = {
       return res.json();
     },
   },
+  reports: {
+    create: (data: { reportedUserId?: string; reportedTeamId?: string; reason: string; description?: string }) =>
+      request<any>('/reports', { method: 'POST', body: data }),
+    list: () => request<any[]>('/reports'),
+    update: (id: string, status: string) =>
+      request<any>(`/reports/${id}`, { method: 'PATCH', body: { status } }),
+  },
 };

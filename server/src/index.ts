@@ -14,6 +14,7 @@ import chatRoutes from "./routes/chats";
 import blockRoutes from "./routes/blocks";
 import statsRoutes from "./routes/stats";
 import uploadRoutes from "./routes/upload";
+import reportRoutes from "./routes/reports";
 import { setupSocket } from "./socket";
 import { startCronJobs } from "./cron";
 import { errorHandler } from "./middleware/errorHandler";
@@ -46,6 +47,7 @@ app.use("/api/chats", chatRoutes);
 app.use("/api/blocks", blockRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });

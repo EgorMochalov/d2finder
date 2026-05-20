@@ -14,6 +14,7 @@ interface User {
   playstyleTags?: string[] | string;
   isLooking?: boolean;
   lookingExpiry?: string;
+  role?: 'USER' | 'ADMIN';
 }
 
 interface AuthContextType {
