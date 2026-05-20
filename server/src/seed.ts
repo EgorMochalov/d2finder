@@ -241,9 +241,8 @@ async function seed() {
   console.log("Teams: Shadow Legion [SL], Phoenix Rising [PR]");
 }
 
-seed()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+if (process.env.SEED_RUN) {
+  seed().catch((e) => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect());
+}
+
+export { seed };

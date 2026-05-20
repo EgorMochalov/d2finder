@@ -16,6 +16,7 @@ import uploadRoutes from "./routes/upload";
 import { setupSocket } from "./socket";
 import { startCronJobs } from "./cron";
 import { errorHandler } from "./middleware/errorHandler";
+import { seed } from "./seed";
 
 const app = express();
 const httpServer = createServer(app);
@@ -54,6 +55,19 @@ app.use("/api/stats", statsRoutes);
 app.use("/api/upload", uploadRoutes);
 
 app.use(errorHandler);
+
+app.post("/api/seed", async (req, res) => {
+  const key = req.headers["x-seed-key"];
+  if (!key || key !== process.env.SEED_KEY) {
+    return res.status(403).json({ error: "Invalid seed key" });
+  }
+  try {
+    await seed();
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
