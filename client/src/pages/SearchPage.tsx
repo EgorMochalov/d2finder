@@ -8,6 +8,7 @@ import { useDebounce } from '../lib/useDebounce';
 import { useOnlineUsers } from '../lib/socket';
 import { useToast } from '../components/Toast';
 import { Search as SearchIcon, Star, MapPin, X, SlidersHorizontal, MessageCircle, UserPlus, AlertCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import Modal from '../components/Modal';
 import { CardSkeleton } from '../components/Skeleton';
 
@@ -63,6 +64,10 @@ export default function SearchPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>Search Players — Dota 2 Finder</title>
+        <meta property="og:title" content="Search Players — Dota 2 Finder" />
+      </Helmet>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-text">{t('search.title')}</h1>
         <button onClick={() => setShowF(!showF)} className="md:hidden flex items-center gap-1 text-muted hover:text-text text-sm"><SlidersHorizontal size={16} /> {showF ? t('common.hide') : t('search.filters')}</button>

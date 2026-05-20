@@ -7,6 +7,7 @@ import { useI18n } from '../lib/i18n';
 import { useToast } from '../components/Toast';
 import { getSocket } from '../lib/socket';
 import { MessageCircle, Send, Info, X, Ban, Unlock, ChevronRight, Menu } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import Modal from '../components/Modal';
 
 export default function ChatPage() {
@@ -107,6 +108,10 @@ export default function ChatPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
+      <Helmet>
+        <title>Chat — Dota 2 Finder</title>
+        <meta property="og:title" content="Chat — Dota 2 Finder" />
+      </Helmet>
       <div className="glass rounded-2xl overflow-hidden" style={{ height: 'calc(100vh - 120px)' }}>
         <div className="flex h-full relative">
           {/* Drawer backdrop */}

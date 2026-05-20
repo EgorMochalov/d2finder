@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useI18n } from '../lib/i18n';
 import { RotateCcw, Undo2, Search, X } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { HEROES, ALL_PHASES, getHeroImageUrl } from '../lib/heroes';
 import type { Hero } from '../types';
 
@@ -147,6 +148,10 @@ export default function DraftSimulator() {
 
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4 py-6">
+      <Helmet>
+        <title>Draft Simulator — Dota 2 Finder</title>
+        <meta property="og:title" content="Draft Simulator — Dota 2 Finder" />
+      </Helmet>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl md:text-3xl font-bold text-text">{t('draft.title')}</h1>
         <div className="flex items-center gap-2">

@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useToast } from '../components/Toast';
 import { Shield, ChevronRight, Check, X, UserPlus, Send, AlertCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import Modal, { ConfirmModal } from '../components/Modal';
 
 export default function MyRequestsPage() {
@@ -68,6 +69,10 @@ export default function MyRequestsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>My Teams — Dota 2 Finder</title>
+        <meta property="og:title" content="My Teams — Dota 2 Finder" />
+      </Helmet>
       <h1 className="text-2xl font-bold text-text mb-6 flex items-center gap-2"><Shield size={22} style={{ color: '#ffd700' }} /> {t('my.title')}</h1>
 
       {/* Invitations received */}

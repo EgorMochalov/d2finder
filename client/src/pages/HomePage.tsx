@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { api } from '../lib/api';
 import { Search, Users, MessageCircle, Swords, ArrowRight, Shield } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -24,6 +25,12 @@ export default function HomePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 md:py-16">
+      <Helmet>
+        <title>Dota 2 Finder — Find Teammates & Teams</title>
+        <meta name="description" content="Find teammates for Dota 2. Search by rank, role, region and language. Create teams, chat, and participate in clan wars." />
+        <meta property="og:title" content="Dota 2 Finder" />
+        <meta property="og:description" content="Find teammates for Dota 2. Search by rank, role, region and language." />
+      </Helmet>
       <div className="text-center mb-16 md:mb-20">
         <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-3xl glass-tinted mb-6 shadow-glow">
           <Shield size={44} style={{ color: '#ffd700' }} />

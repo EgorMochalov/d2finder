@@ -7,6 +7,7 @@ import { useI18n } from '../lib/i18n';
 import { useDebounce } from '../lib/useDebounce';
 import { useToast } from '../components/Toast';
 import { Search, Users, Plus, SlidersHorizontal, X, LogIn, MessageCircle, Swords, AlertCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import Modal from '../components/Modal';
 import { TeamCardSkeleton } from '../components/Skeleton';
 
@@ -99,6 +100,10 @@ export default function TeamsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>Teams — Dota 2 Finder</title>
+        <meta property="og:title" content="Teams — Dota 2 Finder" />
+      </Helmet>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-text flex items-center gap-2"><Users size={24} /> {t('teams.title')}</h1>
         <div className="flex items-center gap-2">

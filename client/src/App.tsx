@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { AuthProvider, useAuth } from './lib/auth';
 import { useSocket } from './lib/socket';
 import { I18nProvider } from './lib/i18n';
@@ -9,6 +10,7 @@ import NavBar from './components/NavBar';
 import BackButton from './components/BackButton';
 import MobileNav from './components/MobileNav';
 import Tour from './components/Tour';
+import { SITE_NAME, SITE_DESC } from './lib/meta';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -43,6 +45,17 @@ function AppContent() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <Helmet>
+        <title>{SITE_NAME}</title>
+        <meta name="description" content={SITE_DESC} />
+        <meta property="og:title" content={SITE_NAME} />
+        <meta property="og:description" content={SITE_DESC} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://d2finder.vercel.app" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={SITE_NAME} />
+        <meta name="twitter:description" content={SITE_DESC} />
+      </Helmet>
       {user && <Tour />}
       <div className="min-h-screen flex flex-col">
         <NavBar />
@@ -77,11 +90,13 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <I18nProvider>
-        <ToastProvider>
-          <AppContent />
-        </ToastProvider>
-      </I18nProvider>
+      <HelmetProvider>
+        <I18nProvider>
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
+        </I18nProvider>
+      </HelmetProvider>
     </AuthProvider>
   );
 }

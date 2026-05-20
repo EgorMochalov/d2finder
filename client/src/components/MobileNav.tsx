@@ -1,5 +1,4 @@
 import { useLocation, Link } from 'react-router-dom';
-import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { Search, Users, MessageCircle, Swords, Home } from 'lucide-react';
 
@@ -13,7 +12,6 @@ const links = [
 
 export default function MobileNav() {
   const { pathname } = useLocation();
-  const { user } = useAuth();
   const { t } = useI18n();
 
   return (

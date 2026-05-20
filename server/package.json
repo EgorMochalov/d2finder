@@ -2,6 +2,9 @@
   "name": "dota2-teammate-server",
   "version": "1.0.0",
   "private": true,
+  "prisma": {
+    "seed": "tsx src/seed.ts"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",

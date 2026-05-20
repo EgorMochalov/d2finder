@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useI18n, translateApiError } from '../lib/i18n';
 import { Shield, AlertCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 export default function LoginPage() {
   const [login, setLogin] = useState('');
@@ -35,6 +36,10 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-sm mx-auto px-4 py-20">
+      <Helmet>
+        <title>Sign In — Dota 2 Finder</title>
+        <meta property="og:title" content="Sign In — Dota 2 Finder" />
+      </Helmet>
       <div className="glass-strong rounded-2xl p-8">
         <div className="text-center mb-6">
           <div className="avatar-square w-14 h-14 mx-auto mb-4 text-2xl"><Shield size={24} /></div>

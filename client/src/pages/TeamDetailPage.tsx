@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth';
 import { useI18n } from '../lib/i18n';
 import { useToast } from '../components/Toast';
 import { Users, UserPlus, Send, Check, X, AlertCircle, LogOut, Trash2, Camera } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import Modal, { ConfirmModal } from '../components/Modal';
 
 export default function TeamDetailPage() {
@@ -78,6 +79,10 @@ export default function TeamDetailPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>Team — Dota 2 Finder</title>
+        <meta property="og:title" content="Team — Dota 2 Finder" />
+      </Helmet>
       <div className="glass rounded-2xl overflow-hidden">
         <div className="bg-gradient-to-r from-accent/10 via-blue/10 to-transparent p-6 md:p-8">
           <div className="flex items-center gap-4">

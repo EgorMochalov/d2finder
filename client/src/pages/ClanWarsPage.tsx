@@ -6,6 +6,7 @@ import { useI18n } from '../lib/i18n';
 import { useToast } from '../components/Toast';
 import { useDebounce } from '../lib/useDebounce';
 import { Plus, Trash2, Clock, Shield, Users, Swords, AlertCircle, Search, X, SlidersHorizontal } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import Modal from '../components/Modal';
 import RankPicker from '../components/RankPicker';
 
@@ -71,6 +72,10 @@ export default function ClanWarsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>Clan Wars — Dota 2 Finder</title>
+        <meta property="og:title" content="Clan Wars — Dota 2 Finder" />
+      </Helmet>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-text flex items-center gap-2"><Swords size={24} /> {t('clanwars.looking')}</h1>
         <div className="flex items-center gap-2">

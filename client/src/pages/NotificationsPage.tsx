@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import { Bell, CheckCheck, ArrowRight } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 export default function NotificationsPage() {
   const { t } = useI18n();
@@ -27,6 +28,10 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>Notifications — Dota 2 Finder</title>
+        <meta property="og:title" content="Notifications — Dota 2 Finder" />
+      </Helmet>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-text flex items-center gap-2"><Bell size={24} /> {t('notif.title')}</h1>
         {notifs.some((n) => !n.read) && (

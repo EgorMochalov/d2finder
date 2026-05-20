@@ -8,6 +8,7 @@ import AvatarImg from '../components/AvatarImg';
 import RankPicker from '../components/RankPicker';
 import Modal from '../components/Modal';
 import { UserPlus, MessageCircle, Shield, Camera, Save, Star, MapPin, Globe, Square, Play, AlertCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const REGIONS = ['Europe West', 'Europe East', 'Russia', 'US East', 'US West', 'SE Asia', 'China', 'South America', 'Australia', 'Japan'];
 const LANGUAGES = ['English', 'Russian', 'Chinese', 'Spanish', 'Portuguese', 'German', 'French', 'Ukrainian', 'Polish', 'Turkish'];
@@ -102,6 +103,10 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>Profile — Dota 2 Finder</title>
+        <meta property="og:title" content="Profile — Dota 2 Finder" />
+      </Helmet>
       <div className="relative rounded-2xl overflow-hidden mb-6">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-blue/10 to-gold/5" />
         <div className="relative p-6 md:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5">
