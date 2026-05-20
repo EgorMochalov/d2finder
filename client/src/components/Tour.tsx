@@ -4,6 +4,7 @@ import { useI18n } from '../lib/i18n';
 import { X, Check, ArrowRight, Shield, Search, Users, MessageCircle, Swords, UserPlus, Settings, Edit3, Send, MousePointerClick, Ghost, ClipboardList } from 'lucide-react';
 
 const PROGRESS_KEY = 'tour_progress_v3';
+const COMPLETED_KEY = 'tour_completed_v1';
 
 interface StepDef {
   icon: typeof Shield;
@@ -115,12 +116,15 @@ export default function Tour() {
 
   const pageGroup = getPageGroup(location.pathname);
   const [allProgress, setAllProgress] = useState<Record<string, boolean[]>>(() => {
+    if (localStorage.getItem(COMPLETED_KEY) === 'true') return {};
     const saved = loadAllProgress();
     getGroupIds().forEach((gid) => { if (!saved[gid]) saved[gid] = groups.find((g) => g.page === gid)!.steps.map(() => false); });
     return saved;
   });
+  const [completed, setCompleted] = useState(() => localStorage.getItem(COMPLETED_KEY) === 'true');
 
-  const groupIdx = groups.findIndex((g) => g.page === pageGroup);
+  const welcomeIncomplete = !allProgress['*']?.every(Boolean);
+  const groupIdx = welcomeIncomplete ? 0 : groups.findIndex((g) => g.page === pageGroup);
   const group = groupIdx >= 0 ? groups[groupIdx] : null;
   const groupSteps = group?.steps || [];
   const groupProgress = group ? (allProgress[group.page] || groupSteps.map(() => false)) : [];
@@ -145,6 +149,18 @@ export default function Tour() {
     if (p[gid]) p[gid][idx] = true;
     saveAllProgress(p);
     setAllProgress(p);
+    checkAllDone(p);
+  }
+
+  function checkAllDone(p: Record<string, boolean[]>) {
+    const allDone = groups.every((g) => {
+      const prog = p[g.page];
+      return prog && prog.every(Boolean);
+    });
+    if (allDone) {
+      localStorage.setItem(COMPLETED_KEY, 'true');
+      setCompleted(true);
+    }
   }
 
   function skipFrom(gid: string, fromIdx: number) {
@@ -153,6 +169,7 @@ export default function Tour() {
     if (p[gid]) for (let i = fromIdx; i < p[gid].length; i++) p[gid][i] = true;
     saveAllProgress(p);
     setAllProgress(p);
+    checkAllDone(p);
   }
 
   const advance = useCallback(() => {
@@ -168,6 +185,8 @@ export default function Tour() {
     skipFrom(group.page, pendingIdx);
     setDone(false);
     setEr(null);
+    localStorage.setItem(COMPLETED_KEY, 'true');
+    setCompleted(true);
   }
 
   function skipStep() {
@@ -271,7 +290,7 @@ export default function Tour() {
     };
   }, [step, done, pendingIdx, advance]);
 
-  if (allDone || !step || !group) return null;
+  if (completed || allDone || !step || !group) return null;
 
   const chatNoContacts = pageGroup === '/chat' && pendingIdx === 0 && !hasChats;
 
