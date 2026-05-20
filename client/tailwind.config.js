@@ -3,6 +3,10 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        display: ['Rajdhani', 'system-ui', 'sans-serif'],
+      },
       colors: {
         surface: 'rgba(255, 255, 255, 0.04)',
         'surface-hover': 'rgba(255, 255, 255, 0.08)',

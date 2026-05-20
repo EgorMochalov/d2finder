@@ -8,6 +8,7 @@ import { ToastProvider } from './components/Toast';
 import { UnreadProvider } from './lib/unread';
 import { useEffect } from 'react';
 import NavBar from './components/NavBar';
+import AppBackground from './components/AppBackground';
 import BackButton from './components/BackButton';
 import MobileNav from './components/MobileNav';
 import Tour from './components/Tour';
@@ -34,8 +35,9 @@ function ScrollToTop() {
 
 function PageLoader() {
   return (
-    <div className="flex justify-center py-24">
-      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-accent" />
+    <div className="flex flex-col items-center justify-center py-24 gap-3">
+      <div className="animate-spin rounded-full h-9 w-9 border-2 border-white/10 border-t-accent shadow-glow" />
+      <p className="text-muted text-xs uppercase tracking-widest font-display">Loading</p>
     </div>
   );
 }
@@ -58,7 +60,8 @@ function AppContent() {
         <meta name="twitter:description" content={SITE_DESC} />
       </Helmet>
       {user && <Tour />}
-      <div className="min-h-screen flex flex-col">
+      <AppBackground />
+      <div className="app-shell">
         <NavBar />
         <main className="flex-1 pb-20 md:pb-6">
           <div className="max-w-7xl mx-auto px-4 pt-4">

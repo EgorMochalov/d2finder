@@ -23,13 +23,13 @@ export default function NavBar() {
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
-    <nav className="sticky top-0 z-40 glass border-b border-white/5" style={{ backdropFilter: 'blur(48px)' }}>
+    <nav className="sticky top-0 z-40 glass border-b border-white/5 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-glow">
-            <span className="text-white text-xs font-black">{t('nav.logo_short')}</span>
+        <Link to="/" className="flex items-center gap-2 shrink-0 group">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent via-accent/90 to-gold/40 flex items-center justify-center shadow-glow transition group-hover:scale-105">
+            <span className="text-white text-xs font-black font-display">{t('nav.logo_short')}</span>
           </div>
-          <span className="hidden sm:inline text-text">{t('nav.logo_full')}</span>
+          <span className="hidden sm:inline font-display text-lg font-bold text-text tracking-wide">{t('nav.logo_full')}</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-1">

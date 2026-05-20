@@ -11,8 +11,10 @@ import { Search as SearchIcon, Star, MapPin, X, SlidersHorizontal, MessageCircle
 import { Helmet } from 'react-helmet-async';
 import Modal from '../components/Modal';
 import { CardSkeleton } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
 import { ROLE_PREFS, roleLabelKey } from '../lib/positions';
 import { filterManageableTeams } from '../lib/teamUtils';
+import { getRankTier } from '../lib/rankStyle';
 
 const REGIONS = ['Europe West', 'Europe East', 'Russia', 'US East', 'US West', 'SE Asia', 'China', 'South America', 'Australia', 'Japan'];
 const LANGUAGES = ['English', 'Russian', 'Chinese', 'Spanish', 'Portuguese', 'German', 'French', 'Ukrainian', 'Polish', 'Turkish'];
@@ -70,7 +72,7 @@ export default function SearchPage() {
         <meta property="og:title" content="Search Players — Dota 2 Finder" />
       </Helmet>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-text">{t('search.title')}</h1>
+        <h1 className="font-display text-2xl md:text-3xl font-bold text-text tracking-wide">{t('search.title')}</h1>
         <button onClick={() => setShowF(!showF)} className="md:hidden flex items-center gap-1 text-muted hover:text-text text-sm"><SlidersHorizontal size={16} /> {showF ? t('common.hide') : t('search.filters')}</button>
       </div>
 
@@ -97,23 +99,34 @@ export default function SearchPage() {
               {[...Array(6)].map((_, i) => <CardSkeleton key={i} />)}
             </div>
           ) : players.length === 0 ? (
-            <div className="text-center py-16 text-muted"><SearchIcon size={48} className="mx-auto mb-3 opacity-30" /><p>{t('search.none')}</p></div>
+            <EmptyState icon={SearchIcon} title={t('search.none')} hint={t('search.none_hint')} />
           ) : (
             <div className="space-y-3">
               <p className="text-muted text-sm">{players.length} {t('common.players')} {t('common.found')}</p>
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                {players.map((p, i) => (
-                  <Link key={p.id} to={`/profile/${p.id}`} className="glass rounded-xl p-3 md:p-4 glass-hover block stagger-enter" style={{ animationDelay: `${i * 0.05}s` }}>
+                {players.map((p, i) => {
+                  const tier = getRankTier(p.rank || 0);
+                  return (
+                  <Link key={p.id} to={`/profile/${p.id}`} className="player-card block stagger-enter" style={{ animationDelay: `${i * 0.05}s` }}>
                     <div className="flex items-start gap-2.5 md:gap-3">
                       <div className="relative shrink-0">
                         <AvatarImg src={p.avatarUrl} alt={p.username || ''} className="w-10 h-10 md:w-11 md:h-11 text-base md:text-lg" />
-                        {onlineUsers.has(p.id) && <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green border-2 border-[#0d0d1a]" />}
+                        {onlineUsers.has(p.id) && <span className="online-dot" title="Online" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-1">
                           <div className="min-w-0">
-                            <span className="text-text font-semibold truncate text-sm block">{p.username}</span>
-                            <div className="flex items-center gap-1.5 text-muted text-[11px] mt-0.5 flex-wrap"><Star size={11} style={{ color: '#ffd700' }} /> {p.rank || 0} {t('common.mmr')}{p.region && <><span className="text-muted/30">·</span><MapPin size={11} /> {p.region}</>}</div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-text font-semibold truncate text-sm">{p.username}</span>
+                              {p.isLooking && <span className="looking-badge">{t('profile.looking')}</span>}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-muted text-[11px] mt-1 flex-wrap">
+                              <span className={tier.className}>{tier.label}</span>
+                              <Star size={11} className="text-gold shrink-0" />
+                              <span>{p.rank || 0}</span>
+                              <span className="text-muted/40">{t('common.mmr')}</span>
+                              {p.region && <><span className="text-muted/30">·</span><MapPin size={11} className="shrink-0" /><span>{p.region}</span></>}
+                            </div>
                           </div>
                           <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.preventDefault()}>
                             {user && user.id !== p.id && (<>{myTeams.length > 0 && <button onClick={() => setInvTgt(p)} className="p-1.5 rounded-lg text-muted hover:text-green hover:bg-surface-hover transition" title={t('search.invite')}><UserPlus size={14} /></button>}<button onClick={() => navigate(`/chat?user=${p.id}`)} className="p-1.5 rounded-lg text-muted hover:text-accent hover:bg-surface-hover transition" title={t('search.message')}><MessageCircle size={14} /></button></>)}
@@ -124,7 +137,8 @@ export default function SearchPage() {
                       </div>
                     </div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

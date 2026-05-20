@@ -10,10 +10,25 @@ import { useUnread } from '../lib/unread';
 import { MessageCircle, Send, Info, X, Ban, Unlock, ChevronRight, Menu } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import Modal from '../components/Modal';
+import EmptyState from '../components/EmptyState';
+
+function formatChatDate(iso: string, lang: string): string {
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) {
+    return lang === 'ru' ? 'Сегодня' : 'Today';
+  }
+  if (d.toDateString() === yesterday.toDateString()) {
+    return lang === 'ru' ? 'Вчера' : 'Yesterday';
+  }
+  return d.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short' });
+}
 
 export default function ChatPage() {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { toast } = useToast();
   const { unread, markRead, setActiveChatId } = useUnread();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -192,17 +207,33 @@ export default function ChatPage() {
                 </div>
                 <button onClick={() => setShowInfo((v) => !v)} className="w-8 h-8 rounded-full glass-strong flex items-center justify-center text-muted hover:text-accent transition hover:scale-105 shrink-0"><Info size={16} /></button>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {messages.length === 0 && <div className="text-center py-12 text-muted text-sm">{t('chat.empty')}</div>}
-                {messages.map((msg: any) => (
-                  <div key={msg.id} className={`flex ${msg.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${msg.senderId === user.id ? 'bg-accent-dim border border-accent/20' : 'glass-strong'}`}>
-                      {msg.senderId !== user.id && <Link to={`/profile/${msg.senderId}`} className="text-[11px] text-muted mb-0.5 font-medium block hover:text-accent transition">{msg.sender?.username || 'Unknown'}</Link>}
-                      <p className="text-text text-sm">{msg.content}</p>
-                      <p className="text-[10px] text-muted/50 mt-1 text-right">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {messages.length === 0 && <EmptyState icon={MessageCircle} title={t('chat.empty')} />}
+                {messages.map((msg: any, idx: number) => {
+                  const prev = messages[idx - 1];
+                  const showDate = !prev || new Date(prev.createdAt).toDateString() !== new Date(msg.createdAt).toDateString();
+                  const mine = msg.senderId === user.id;
+                  return (
+                    <div key={msg.id}>
+                      {showDate && (
+                        <div className="chat-date-divider"><span>{formatChatDate(msg.createdAt, lang)}</span></div>
+                      )}
+                      <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${mine ? 'chat-bubble-sent' : 'chat-bubble-received'}`}>
+                          {!mine && activeChat.type === 'TEAM' && (
+                            <Link to={`/profile/${msg.senderId}`} className="text-[11px] text-accent/80 mb-0.5 font-medium block hover:text-accent transition font-display tracking-wide">
+                              {msg.sender?.username || 'Unknown'}
+                            </Link>
+                          )}
+                          <p className="text-text text-sm leading-relaxed">{msg.content}</p>
+                          <p className={`text-[10px] text-muted/50 mt-1 ${mine ? 'text-right' : 'text-left'}`}>
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <div ref={msgsRef} />
               </div>
               <form onSubmit={handleSend} className="p-4 border-t border-white/5 flex gap-2">
@@ -211,8 +242,8 @@ export default function ChatPage() {
               </form>
             </div>
           ) : (
-            <div className="flex-1 items-center justify-center text-muted flex">
-              <div className="text-center"><MessageCircle size={40} className="mx-auto mb-3 opacity-30" /><p className="text-sm">{t('chat.none')}</p></div>
+            <div className="flex-1 flex items-center justify-center">
+              <EmptyState icon={MessageCircle} title={t('chat.none')} hint={t('chat.none_hint')} />
             </div>
           )}
 
