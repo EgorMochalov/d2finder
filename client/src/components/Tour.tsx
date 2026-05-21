@@ -227,9 +227,8 @@ export default function Tour() {
 
   useEffect(() => {
     if (!step?.target) return;
-    window.addEventListener('scroll', measure, { passive: true });
     window.addEventListener('resize', measure, { passive: true });
-    return () => { window.removeEventListener('scroll', measure); window.removeEventListener('resize', measure); };
+    return () => { window.removeEventListener('resize', measure); };
   }, [measure, !!step?.target]);
 
   // Auto-skip modal-dependent steps when modal closes
