@@ -11,6 +11,7 @@ const SECRET = JWT_SECRET || "dev-only-secret-change-me";
 export interface JwtPayload {
   userId: string;
   username: string;
+  role: string;
 }
 
 export function signToken(payload: JwtPayload): string {
